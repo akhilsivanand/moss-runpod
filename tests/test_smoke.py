@@ -73,6 +73,38 @@ class SmokeSchemaTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaisesRegex(smoke.SmokeError, "unsupported option"):
                 smoke.validate_api_graph(graph, self.definitions)
 
+    def test_v3_combo_accepts_declared_options_and_rejects_unknown_options(self):
+        # Pinned ComfyUI's V3 ImageScaleToTotalPixels uses this COMBO shape.
+        self.definitions["ImageScaleToTotalPixels"] = {
+            "input": {"required": {
+                "upscale_method": ["COMBO", {
+                    "options": ["nearest-exact", "bilinear", "area", "bicubic", "lanczos"],
+                    "multiselect": False,
+                }],
+                "megapixels": ["FLOAT", {"min": 0.01, "max": 16.0}],
+                "resolution_steps": ["INT", {"min": 1, "max": 256}],
+            }},
+            "output": ["IMAGE"],
+        }
+        graph = {"8": {"class_type": "ImageScaleToTotalPixels", "inputs": {
+            "upscale_method": "lanczos", "megapixels": 1, "resolution_steps": 16,
+        }}}
+        self.assertEqual(smoke.validate_api_graph(graph, self.definitions), {"ImageScaleToTotalPixels"})
+        graph["8"]["inputs"]["upscale_method"] = "unsupported"
+        with self.assertRaisesRegex(smoke.SmokeError, "unsupported option for upscale_method"):
+            smoke.validate_api_graph(graph, self.definitions)
+
+    def test_v3_combo_requires_declared_options_metadata(self):
+        for descriptor in (["COMBO"], ["COMBO", {}], ["COMBO", {"options": "er_sde"}]):
+            definitions = deepcopy(self.definitions)
+            definitions["KSampler"]["input"]["required"]["sampler_name"] = descriptor
+            with self.subTest(descriptor=descriptor), self.assertRaisesRegex(smoke.SmokeError, "invalid COMBO options schema"):
+                smoke.validate_api_graph(self.graph, definitions)
+
+    def test_v3_file_selector_can_have_no_installed_models(self):
+        self.definitions["UNETLoader"]["input"]["required"]["unet_name"] = ["COMBO", {"options": []}]
+        self.assertEqual(smoke.validate_api_graph(self.graph, self.definitions), {"UNETLoader", "KSampler"})
+
     def test_link_target_output_and_type_are_checked(self):
         for link, message in [(["missing", 0], "missing node"), (["1", 7], "missing output"), (["2", 0], "incompatible link")]:
             graph = deepcopy(self.graph)

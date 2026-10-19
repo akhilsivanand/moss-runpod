@@ -108,6 +108,13 @@ def validate_api_graph(document, definitions, label="API graph"):
                 if isinstance(kind, str) and kind != "*" and outputs[index] not in (kind, "*"):
                     raise SmokeError(f"{label}: node {identifier} has an incompatible link for {name}")
                 continue
+            if kind == "COMBO":
+                # V3 nodes expose dropdowns as COMBO plus metadata options;
+                # legacy nodes put the options list directly in descriptor[0].
+                metadata = descriptor[1] if len(descriptor) > 1 else None
+                if not isinstance(metadata, dict) or not isinstance(metadata.get("options"), list):
+                    raise SmokeError(f"{label}: node {identifier} has an invalid COMBO options schema for {name}")
+                kind = metadata["options"]
             if isinstance(kind, list):
                 if name in FILE_SELECTORS:
                     # Models and input images are deliberately absent in this
