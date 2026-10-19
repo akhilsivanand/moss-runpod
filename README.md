@@ -2,15 +2,13 @@
 
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
-**Release status:** the [source repository](https://github.com/akhilsivanand/moss-runpod) is public. Image build, fresh-volume GPU validation, and Runpod deployment are pending; maintainer authorization is in progress. See [release steps](docs/release.md).
-
-Source validation: **65 tests passed**, and Docker's configuration check passed. See [the validation record](docs/validation-status.md) for the checks still pending.
+**Release status — 2026-10-19:** the first candidate completed all three queue presets and an optional second-LoRA variant. Browser testing found a gateway origin mismatch; its correction and a replacement image are being validated. The Pod template remains private, version `0.1.0` promotion is pending, and Hub submission has not occurred. See [validation details](docs/validation-status.md).
 
 ## Open the ComfyUI browser UI
 
-After a maintainer publishes a tested image and Pod template:
+[Open the staging Pod template — PRIVATE / replacement validation pending](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu). The current template is a first candidate; its image and deployment link may change before public release.
 
-1. Deploy the Pod template with one NVIDIA GPU with at least 24 GB VRAM, a CUDA 13.0-compatible host, 40 GB container disk, and a 60 GB persistent volume mounted at `/workspace`.
+1. Deploy with one NVIDIA GPU with at least 24 GB VRAM, a CUDA 13.0-compatible host, 40 GB container disk, and a 60 GB persistent volume mounted at `/workspace`. The template sets `MOSS_VOLUME_GB=60`; update it to match the provisioned volume size if you resize the volume.
 2. Set `MOSS_MODE=pod` and your own `MOSS_PASSWORD` of at least 12 characters before starting. There is no default password. Prefer a Runpod Secret for the password. Leave the image's start command unchanged.
 3. Open the HTTP service on port **8188**. The same address shows preparation progress while models download. When prompted, sign in as **moss** with your configured password.
 4. Open `/?template=photography-bf16&source=moss` on that service, enter a prompt, and run the graph. The **Workflows** panel also contains the bundled graphs.
@@ -18,6 +16,8 @@ After a maintainer publishes a tested image and Pod template:
 Initial startup downloads and verifies **23.51 GB** across six public model files listed in the [pinned model manifest](config/models.json). It is not instant; download speed and the selected host determine preparation time. No Hugging Face token is required. Restarts reuse verified models on the attached volume. Retain that volume to preserve your files.
 
 Port 22 is available for SSH using Runpod's configured SSH key. Expose the password-protected gateway on 8188 for ComfyUI; the internal service on `127.0.0.1:8189` stays private. Public health endpoints return readiness and startup phase. Detailed download progress requires login.
+
+The corrected gateway derives the standard Runpod public origin automatically from the Pod identity. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com` (include a nondefault port if needed, without a path). This setting is part of the replacement candidate under validation.
 
 ## Choose a workflow
 
@@ -35,7 +35,9 @@ These settings are starting points. Prompt, seed, subject, and adapters affect t
 
 ## Use the Hub API
 
-The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`. It is separate from the interactive Pod template and does not expose the browser UI. A worker downloads the same six files on first boot; an ephemeral worker can need those downloads again after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
+The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`; Hub submission is pending. Once the listing is approved, deploy it to create your own endpoint. The worker does not expose the browser UI.
+
+A worker downloads the same six files on first boot. Cold preparation took about **7.4 minutes on one tested worker**; startup time varies with downloads and the host. Ephemeral workers may repeat the downloads after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
 
 Submit a job with a nonempty `prompt` and `preset` set to `photography`, `fast`, or `img2img`. For a small first test:
 
@@ -53,7 +55,7 @@ Submit a job with a nonempty `prompt` and `preset` set to `photography`, `fast`,
 }
 ```
 
-Send this payload to `https://api.runpod.ai/v2/ENDPOINT_ID/run` using your Runpod API key in the Authorization header, then poll `https://api.runpod.ai/v2/ENDPOINT_ID/status/JOB_ID` for that job. The per-job execution limit is 600 seconds; cold worker preparation is separate. The Hub build test allows 1,200,000 milliseconds for its cold test. Use `/run` for jobs that can outlast a synchronous request.
+Send this payload to `https://api.runpod.ai/v2/ENDPOINT_ID/run` with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`, then poll `https://api.runpod.ai/v2/ENDPOINT_ID/status/JOB_ID` for that job. Replace the placeholders with your own endpoint, job, and key. The per-job execution limit is 600 seconds; cold worker preparation is separate. The Hub build test allows 1,200,000 milliseconds for its cold test. Use `/run` for jobs that can outlast a synchronous request.
 
 The completed Runpod result contains this `output` structure:
 
@@ -92,7 +94,7 @@ The default deployment's approved adapter list contains only the bundled Destrip
 │   ├── hub.json                  # Hub metadata and Serverless settings
 │   ├── tests.json                # real fast-preset generation test
 │   └── README.md                 # Hub listing instructions
-├── deploy/pod-template.json      # Pod configuration; image publication pending
+├── deploy/pod-template.json      # private Pod configuration with pinned image
 ├── docs/release.md               # build, validate, and publish gates
 ├── workflows/ui/                 # browser graphs
 ├── workflows/api/                # executable graph exports
@@ -108,7 +110,9 @@ Application files are baked under `/opt/moss`, ComfyUI under `/opt/comfyui`, and
 | `MOSS_MODE` | `pod` for the browser; `serverless` for the queue worker |
 | `MOSS_PASSWORD` | Your own password of at least 12 characters; required in Pod mode |
 | `MOSS_DATA_DIR` | Mutable data root; defaults to `/workspace/moss` |
+| `MOSS_VOLUME_GB` | Pod capacity check in decimal GB; `60` for the supplied 60 GB volume; adjust when resizing |
+| `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain; standard Runpod origin is derived automatically |
 
-The planned release image is `ghcr.io/akhilsivanand/moss-comfyui:0.1.0`. This namespace comes from the connected GitHub account. Build, test, and publish the image before using the Pod configuration. This repository contains no account-specific deployment, generated samples, private runtime data, or embedded credentials.
+The public **first-candidate** image is `ghcr.io/akhilsivanand/moss-comfyui@sha256:e537b3802e74ce6f560c3007cff039d392c8e91d8952ddf75a791241218a393b`. It requires the gateway correction before release; the replacement image and promotion to `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` are pending. See [the validation record](docs/validation-status.md) for the tested revision and exact scope. This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI, and upstream workflow material retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

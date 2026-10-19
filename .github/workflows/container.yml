@@ -63,17 +63,58 @@ jobs:
           tag="staging-${GITHUB_SHA}"
           printf 'name=%s\nreference=%s:%s\n' "$image" "$image" "$tag" >> "$GITHUB_OUTPUT"
 
+      - name: Select guarded incremental or full build
+        id: build
+        env:
+          BASE_REVISION: 4f4071f610a457fb168236383e021c4090765fe5
+        shell: bash
+        run: |
+          dockerfile="$GITHUB_WORKSPACE/Dockerfile"
+          incremental=false
+          base_available=false
+          if git cat-file -e "${BASE_REVISION}^{commit}" 2>/dev/null; then
+            base_available=true
+          elif git fetch --no-tags --depth=1 origin "$BASE_REVISION"; then
+            base_available=true
+          else
+            echo '::notice::Previous source commit unavailable; using the full Dockerfile.'
+          fi
+
+          # Every baked input except src/ and README.md must be unchanged.
+          # Keep the same context exclusions and reject source deletions/type
+          # changes, which COPY over the old image could otherwise leave behind.
+          if [[ "$base_available" == true ]] &&
+             git diff --quiet "$BASE_REVISION" "$GITHUB_SHA" -- \
+               Dockerfile .dockerignore handler.py requirements/runtime.lock \
+               config/ workflows/ scripts/ custom_nodes/ LICENSE THIRD_PARTY_NOTICES.txt &&
+             git diff --quiet --no-renames --diff-filter=DT \
+               "$BASE_REVISION" "$GITHUB_SHA" -- src/; then
+            dockerfile="$RUNNER_TEMP/moss-incremental.Dockerfile"
+            cat > "$dockerfile" <<'DOCKERFILE'
+          FROM ghcr.io/akhilsivanand/moss-comfyui@sha256:e537b3802e74ce6f560c3007cff039d392c8e91d8952ddf75a791241218a393b
+          COPY src/ /opt/moss/src/
+          COPY README.md /opt/moss/
+          DOCKERFILE
+            incremental=true
+            echo 'Using the pinned previous image with refreshed application source and README.'
+          else
+            echo 'Using the full Dockerfile because a guarded input changed.'
+          fi
+          printf 'dockerfile=%s\nincremental=%s\n' "$dockerfile" "$incremental" >> "$GITHUB_OUTPUT"
+
       - name: Build once into the Docker image store
         env:
           IMAGE_REFERENCE: ${{ steps.image.outputs.reference }}
+          DOCKERFILE_PATH: ${{ steps.build.outputs.dockerfile }}
         shell: bash
         run: |
           # The native Docker builder avoids loading a second copy of this
           # large image from a separate Buildx container cache.
-          docker build --progress=plain --pull \
+          docker build --progress=plain --pull --file "$DOCKERFILE_PATH" \
             --build-arg "VERSION=staging-${GITHUB_SHA}" \
             --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
             --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.version=staging-${GITHUB_SHA}" \
             --tag "$IMAGE_REFERENCE" .
 
       - name: Check baked dependencies on CPU

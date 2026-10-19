@@ -3,8 +3,11 @@ import asyncio
 import base64
 import hmac
 import html
+import ipaddress
 import json
+import os
 from pathlib import Path
+import re
 from urllib.parse import urlsplit, quote
 
 import aiohttp
@@ -13,6 +16,67 @@ from aiohttp import web
 HOP_HEADERS = {'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization',
                'te', 'trailer', 'transfer-encoding', 'upgrade', 'host', 'authorization'}
 UPSTREAM_SESSION = web.AppKey('upstream', aiohttp.ClientSession)
+
+
+def normalize_origin(value):
+    """Parse a single HTTP Origin without trusting forwarded request headers."""
+    if not isinstance(value, str) or not value or len(value) > 2048:
+        return None
+    if ('?' in value or '#' in value
+            or any(character.isspace() or ord(character) < 32 or ord(character) == 127 for character in value)):
+        return None
+    try:
+        parsed = urlsplit(value)
+        if (parsed.scheme not in ('http', 'https') or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.path or parsed.query or parsed.fragment):
+            return None
+        host = parsed.hostname.encode('idna').decode('ascii').lower()
+        if '%' in host or parsed.netloc.endswith(':'):
+            return None
+        try:
+            host = ipaddress.ip_address(host).compressed.lower()
+        except ValueError:
+            if len(host) > 253 or not all(re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', part)
+                                         for part in host.split('.')):
+                return None
+        port = parsed.port
+        if port is None:
+            port = 443 if parsed.scheme == 'https' else 80
+        if port < 1:
+            return None
+        return parsed.scheme, host, port
+    except (ValueError, UnicodeError):
+        return None
+
+
+def public_origin_from_environment():
+    configured = os.environ.get('MOSS_PUBLIC_ORIGIN')
+    if configured is not None:
+        origin = normalize_origin(configured)
+        if origin is None:
+            raise ValueError('MOSS_PUBLIC_ORIGIN must be an HTTP(S) origin without a path, query, or credentials.')
+        return origin
+    pod_id = os.environ.get('RUNPOD_POD_ID')
+    if pod_id is not None:
+        if not re.fullmatch(r'[a-z0-9]{8,58}', pod_id):
+            raise ValueError('RUNPOD_POD_ID is not a valid Pod identifier.')
+        return normalize_origin('https://' + pod_id + '-8188.proxy.runpod.net')
+    return None
+
+
+def origin_allowed(origin, request_host, public_origin):
+    if origin is None:
+        return True  # Authenticated API clients need not send a browser Origin.
+    normalized = normalize_origin(origin)
+    if normalized is None:
+        return False
+    if public_origin is not None:
+        return normalized == public_origin
+    # Direct/local use, or a proxy preserving the public Host. TLS may terminate
+    # before this gateway, so the request's internal HTTP scheme is not public.
+    expected = normalize_origin(normalized[0] + '://' + request_host)
+    return normalized == expected
 
 
 def authorized(header, password):
@@ -47,6 +111,7 @@ def page(state, workflow_config):
 
 def create_app(state, root, password, mode='pod', upstream='http://127.0.0.1:8189'):
     config = json.loads((Path(root) / 'config/workflows.json').read_text())
+    public_origin = public_origin_from_environment() if mode == 'pod' else None
     app = web.Application(client_max_size=50 * 1024**2)
 
     async def session_context(application):
@@ -73,7 +138,7 @@ def create_app(state, root, password, mode='pod', upstream='http://127.0.0.1:818
                 headers={'WWW-Authenticate': 'Basic realm="MOSS Image Studio", charset="UTF-8"',
                          'Cache-Control': 'no-store'})
         origin = request.headers.get('Origin')
-        if origin and urlsplit(origin).netloc != request.host:
+        if not origin_allowed(origin, request.host, public_origin):
             raise web.HTTPForbidden(text='Cross-origin requests are not allowed.')
         if request.path == '/moss/status':
             return web.json_response({k: state.get(k) for k in ('phase', 'detail', 'ready', 'bytes_total', 'bytes_complete')},
