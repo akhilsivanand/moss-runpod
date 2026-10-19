@@ -1,0 +1,158 @@
+{
+  "prompt": {
+    "2": {
+      "inputs": {
+        "unet_name": "moss_image_sft_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      },
+      "class_type": "UNETLoader",
+      "_meta": {
+        "title": "MOSS SFT diffusion model"
+      }
+    },
+    "3": {
+      "inputs": {
+        "clip_name": "qwen3.5_9b_w4a8_gptq.safetensors",
+        "type": "moss_image",
+        "device": "default"
+      },
+      "class_type": "CLIPLoader",
+      "_meta": {
+        "title": "MOSS text encoder"
+      }
+    },
+    "4": {
+      "inputs": {
+        "vae_name": "flux2-vae_small.safetensors"
+      },
+      "class_type": "VAELoader",
+      "_meta": {
+        "title": "MOSS / FLUX.2 small VAE"
+      }
+    },
+    "5": {
+      "inputs": {
+        "text": "A refined square editorial poster for a fictional botanical design studio. Cream uncoated paper background, a single sculptural green leaf in a small charcoal ceramic vase on a pale stone plinth. Soft window light from the left, subtle paper texture, muted sage and warm ivory palette. At the top, large crisp dark green serif letters read \"MOSS STUDIO\". Near the bottom, smaller widely spaced uppercase letters read \"GROW SOMETHING BEAUTIFUL\". Generous empty margins, balanced centered typography, luxury print design.",
+        "clip": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "1. Describe the finished image"
+      }
+    },
+    "6": {
+      "inputs": {
+        "text": "nsfw, worst quality, bad anatomy, watermark, jpeg artifact",
+        "clip": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "Negative prompt"
+      }
+    },
+    "7": {
+      "inputs": {
+        "lora_name": "moss_sft_destripe_top64_bf16.safetensors",
+        "strength_model": 1.5,
+        "model": [
+          "2",
+          0
+        ]
+      },
+      "class_type": "LoraLoaderModelOnly",
+      "_meta": {
+        "title": "2. LoRA slot 1 — Destripe ON"
+      }
+    },
+    "8": {
+      "inputs": {
+        "lora_name": "moss_sft_destripe_top64_bf16.safetensors",
+        "strength_model": 0,
+        "model": [
+          "7",
+          0
+        ]
+      },
+      "class_type": "LoraLoaderModelOnly",
+      "_meta": {
+        "title": "3. LoRA slot 2 — OFF (strength 0)"
+      }
+    },
+    "9": {
+      "inputs": {
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1
+      },
+      "class_type": "EmptyFlux2LatentImage",
+      "_meta": {
+        "title": "Output size / batch"
+      }
+    },
+    "10": {
+      "inputs": {
+        "seed": 42,
+        "steps": 25,
+        "cfg": 2.5,
+        "sampler_name": "er_sde",
+        "scheduler": "simple",
+        "denoise": 1,
+        "model": [
+          "8",
+          0
+        ],
+        "positive": [
+          "5",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "latent_image": [
+          "9",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "Sampling — 25 steps"
+      }
+    },
+    "11": {
+      "inputs": {
+        "samples": [
+          "10",
+          0
+        ],
+        "vae": [
+          "4",
+          0
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "Decode image"
+      }
+    },
+    "12": {
+      "inputs": {
+        "filename_prefix": "moss/fast/MOSS",
+        "images": [
+          "11",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "Result — saved automatically"
+      }
+    }
+  }
+}

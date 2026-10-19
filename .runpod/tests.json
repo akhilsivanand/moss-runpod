@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "fast-sft-768-generation",
+      "input": {
+        "preset": "fast",
+        "prompt": "A ceramic coffee cup on a wooden table beside a window, natural morning light, realistic photograph.",
+        "seed": 42,
+        "width": 768,
+        "height": 768,
+        "steps": 25,
+        "cfg": 2.5
+      },
+      "timeout": 1200000
+    }
+  ],
+  "config": {
+    "gpuTypeId": "NVIDIA GeForce RTX 4090",
+    "gpuCount": 1,
+    "env": [
+      {
+        "key": "MOSS_MODE",
+        "value": "serverless"
+      }
+    ],
+    "allowedCudaVersions": ["13.0"]
+  }
+}

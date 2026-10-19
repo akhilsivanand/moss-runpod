@@ -1,0 +1,21 @@
+{
+  "name": "MOSS-Image SFT ComfyUI",
+  "category": "NVIDIA",
+  "imageName": "ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0",
+  "containerDiskInGb": 40,
+  "volumeInGb": 60,
+  "volumeMountPath": "/workspace",
+  "ports": [
+    "8188/http",
+    "22/tcp"
+  ],
+  "dockerEntrypoint": [],
+  "dockerStartCmd": [],
+  "env": {
+    "MOSS_MODE": "pod",
+    "MOSS_PASSWORD": ""
+  },
+  "isPublic": false,
+  "isServerless": false,
+  "readme": "# MOSS-Image SFT ComfyUI\n\nRELEASE GATE: replace ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0 with the published, GPU-tested image before deployment.\n\nUse one NVIDIA GPU with at least 24 GB VRAM on a CUDA 13.0-compatible host. Set your own MOSS_PASSWORD of at least 12 characters before starting; login user is moss and there is no default password. Prefer a Runpod Secret. Open HTTP port 8188 for preparation progress and the protected ComfyUI UI.\n\nFirst startup downloads and verifies 23.51 GB of public model files and is not instant. Keep the 60 GB volume mounted at /workspace to retain models and your work. Open /?template=photography-bf16&source=moss for the photography graph. Port 22 uses your Runpod SSH key.\n\nThis template remains private until the release checklist and fresh-volume GPU/restart tests pass."
+}

@@ -1,0 +1,26 @@
+# Explicit public runtime allowlist; no workspaces, weights, outputs or secrets.
+*
+!Dockerfile
+!.dockerignore
+!README.md
+!LICENSE
+!THIRD_PARTY_NOTICES.txt
+!handler.py
+!requirements/
+!requirements/runtime.lock
+!src/
+!src/**
+!config/
+!config/*.json
+!workflows/
+!workflows/**
+!custom_nodes/
+!custom_nodes/**
+!scripts/
+!scripts/entrypoint.sh
+!scripts/base-ready.sh
+!scripts/healthcheck.py
+!scripts/smoke_container.py
+**/__pycache__
+**/*.pyc
+**/.DS_Store

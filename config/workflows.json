@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "default_preset": "photography",
+  "template_source": "moss",
+  "allowed_loras": [
+    "moss_sft_destripe_top64_bf16.safetensors"
+  ],
+  "presets": {
+    "photography": {
+      "title": "SFT Photography — BF16",
+      "description": "Direct photographic prompts, two SFT LoRA slots, portrait output.",
+      "ui": "workflows/ui/photography-bf16.json",
+      "api": "workflows/api/photography-bf16.json",
+      "defaults": {
+        "width": 1216,
+        "height": 1664,
+        "steps": 25,
+        "cfg": 2.5
+      },
+      "nodes": {
+        "positive": "5",
+        "sampler": "10",
+        "latent": "9",
+        "lora": "8",
+        "save": "12"
+      }
+    },
+    "fast": {
+      "title": "SFT Fast — INT8 + LoRAs",
+      "description": "Memory-efficient text to image with Destripe and an optional SFT adapter.",
+      "ui": "workflows/ui/fast-sft-int8-lora.json",
+      "api": "workflows/api/fast-sft-int8-lora.json",
+      "defaults": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 25,
+        "cfg": 2.5
+      },
+      "nodes": {
+        "positive": "5",
+        "sampler": "10",
+        "latent": "9",
+        "lora": "8",
+        "save": "12"
+      }
+    },
+    "img2img": {
+      "title": "Image variation — experimental",
+      "description": "Upload an image for ordinary latent repainting.",
+      "ui": "workflows/ui/img2img-sft-int8.json",
+      "api": "workflows/api/img2img-sft-int8.json",
+      "defaults": {
+        "width": 1024,
+        "height": 1024,
+        "steps": 25,
+        "cfg": 2.5
+      },
+      "nodes": {
+        "positive": "5",
+        "sampler": "10",
+        "load_image": "7",
+        "image_scale": "8",
+        "save": "12"
+      }
+    }
+  },
+  "ui_only": {
+    "enhanced": {
+      "title": "Official SFT — prompt enhancement",
+      "description": "The original Comfy Org MOSS template with its built-in prompt enhancer.",
+      "ui": "workflows/ui/prompt-enhanced.json"
+    }
+  }
+}

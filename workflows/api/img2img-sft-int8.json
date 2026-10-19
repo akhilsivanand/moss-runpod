@@ -1,0 +1,159 @@
+{
+  "prompt": {
+    "2": {
+      "inputs": {
+        "unet_name": "moss_image_sft_int8_convrot.safetensors",
+        "weight_dtype": "default"
+      },
+      "class_type": "UNETLoader",
+      "_meta": {
+        "title": "MOSS SFT diffusion model"
+      }
+    },
+    "3": {
+      "inputs": {
+        "clip_name": "qwen3.5_9b_w4a8_gptq.safetensors",
+        "type": "moss_image",
+        "device": "default"
+      },
+      "class_type": "CLIPLoader",
+      "_meta": {
+        "title": "MOSS text encoder"
+      }
+    },
+    "4": {
+      "inputs": {
+        "vae_name": "flux2-vae_small.safetensors"
+      },
+      "class_type": "VAELoader",
+      "_meta": {
+        "title": "MOSS / FLUX.2 small VAE"
+      }
+    },
+    "5": {
+      "inputs": {
+        "text": "A watercolor illustration of the scene, with loose ink contours, soft indigo and warm amber washes, and visible paper texture.",
+        "clip": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "1. Describe the finished image"
+      }
+    },
+    "6": {
+      "inputs": {
+        "text": "nsfw, worst quality, bad anatomy, watermark, jpeg artifact",
+        "clip": [
+          "3",
+          0
+        ]
+      },
+      "class_type": "CLIPTextEncode",
+      "_meta": {
+        "title": "Negative prompt"
+      }
+    },
+    "7": {
+      "inputs": {
+        "image": ""
+      },
+      "class_type": "LoadImage",
+      "_meta": {
+        "title": "2. Upload your starting image"
+      }
+    },
+    "8": {
+      "inputs": {
+        "upscale_method": "lanczos",
+        "megapixels": 1,
+        "resolution_steps": 16,
+        "image": [
+          "7",
+          0
+        ]
+      },
+      "class_type": "ImageScaleToTotalPixels",
+      "_meta": {
+        "title": "3. Resize input; retain aspect ratio"
+      }
+    },
+    "9": {
+      "inputs": {
+        "pixels": [
+          "8",
+          0
+        ],
+        "vae": [
+          "4",
+          0
+        ]
+      },
+      "class_type": "VAEEncode",
+      "_meta": {
+        "title": "Encode starting image"
+      }
+    },
+    "10": {
+      "inputs": {
+        "seed": 42,
+        "steps": 25,
+        "cfg": 2.5,
+        "sampler_name": "er_sde",
+        "scheduler": "simple",
+        "denoise": 0.6,
+        "model": [
+          "2",
+          0
+        ],
+        "positive": [
+          "5",
+          0
+        ],
+        "negative": [
+          "6",
+          0
+        ],
+        "latent_image": [
+          "9",
+          0
+        ]
+      },
+      "class_type": "KSampler",
+      "_meta": {
+        "title": "4. Sample — denoise controls change"
+      }
+    },
+    "11": {
+      "inputs": {
+        "samples": [
+          "10",
+          0
+        ],
+        "vae": [
+          "4",
+          0
+        ]
+      },
+      "class_type": "VAEDecode",
+      "_meta": {
+        "title": "Decode image"
+      }
+    },
+    "12": {
+      "inputs": {
+        "filename_prefix": "moss/img2img/MOSS",
+        "images": [
+          "11",
+          0
+        ]
+      },
+      "class_type": "SaveImage",
+      "_meta": {
+        "title": "Result — saved automatically"
+      }
+    }
+  }
+}

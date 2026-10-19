@@ -1,0 +1,19 @@
+{
+  "title": "MOSS-Image SFT API",
+  "description": "Generate images with pinned MOSS-Image SFT photography, INT8 and experimental img2img presets through a queue-based API.",
+  "type": "serverless",
+  "category": "image",
+  "config": {
+    "runsOn": "GPU",
+    "containerDiskInGb": 60,
+    "gpuCount": 1,
+    "gpuIds": "ADA_24",
+    "allowedCudaVersions": ["13.0"],
+    "env": [
+      {
+        "key": "MOSS_MODE",
+        "value": "serverless"
+      }
+    ]
+  }
+}
