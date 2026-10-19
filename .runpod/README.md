@@ -2,7 +2,7 @@
 
 Generate images with three presets: `photography` (SFT BF16 and full VAE), `fast` (SFT INT8 and small VAE), and experimental latent `img2img`. This Hub listing uses Runpod's queue-based Serverless API. For the interactive ComfyUI browser, use the separate Pod template described in the repository README.
 
-**Release validation — 2026-10-19:** image `0.1.0` passes all three queue presets, an optional second-LoRA variant, and empty-prompt rejection; the four returned images were inspected. Pod GPU generation, all four browser workflows, prompt enhancement, authentication/WebSocket checks, restart preservation, and post-restart health checks also pass. Hub submission is pending. See the repository's validation record for the exact scope.
+**Release validation — 2026-10-19:** image `0.1.0` passes all three queue presets, an optional second-LoRA variant, and empty-prompt rejection; the four returned images were inspected. Pod GPU generation, all four browser workflows, prompt enhancement, authentication/WebSocket checks, restart preservation, and post-restart health checks also pass. Hub submission is accepted; Runpod build/tests and manual approval are pending. See the repository's validation record for the exact scope.
 
 Use one 24 GB NVIDIA GPU with a CUDA 13.0-compatible host and 60 GB container disk. Initial startup downloads and verifies 23.51 GB of public model files; no model-download token is required. For a persistent network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss` to retain the model cache across worker replacements. Job files and databases stay in separate temporary workspaces per worker.
 

@@ -2,7 +2,7 @@
 
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
-**Release status — 2026-10-19:** image `0.1.0` is available. Pod and queue generation, browser workflows, and restart preservation pass; source CI passes 71 tests. The ComfyUI Pod template is public. Hub submission and manual approval are pending. See [validation details](docs/validation-status.md).
+**Release status — 2026-10-19:** image `0.1.0` is available. Pod and queue generation, browser workflows, and restart preservation pass; source CI passes 71 tests. The ComfyUI Pod template and [GitHub release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.0) are public. [Hub submission](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is accepted; Runpod build/tests and manual approval are pending. See [validation details](docs/validation-status.md).
 
 ## Open the ComfyUI browser UI
 
@@ -35,7 +35,7 @@ These settings are starting points. Prompt, seed, subject, and adapters affect t
 
 ## Use the Hub API
 
-The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`; Hub submission is pending. Once the listing is approved, deploy it to create your own endpoint. The worker does not expose the browser UI.
+The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`; Hub submission is accepted and approval is pending. Once the listing is approved, deploy it to create your own endpoint. The worker does not expose the browser UI.
 
 A worker downloads the same six files on first boot. One cold API job reported about **7 minutes of delay before execution**; this is one worker observation, and startup time varies with downloads and the host. Ephemeral workers may repeat the downloads after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
 

@@ -20,12 +20,12 @@ Live browser checks pass: unauthenticated requests return 401, foreign origins r
 
 Restart preservation passed: all eight task-created files retained their SHA256, all six model files retained their inode, modification time, and size, and the baked application hash was preserved. Although the provider's restart request returned an HTTP 500 timeout, the container process start at 11:04:27.9 UTC confirmed the restart. The post-restart check passed: readiness returned 200, unauthenticated HTTP/WebSocket requests returned 401, and authenticated browser POST/WebSocket checks returned 405/101 with a status event.
 
-The completed [publication report](validation.json) is present, and `python scripts/check_release.py --publish` passes. The tested Pod template is public. GitHub release creation and Hub submission/approval are the remaining publication steps.
+The completed [publication report](validation.json) is present, and `python scripts/check_release.py --publish` passes. The tested Pod template is public. The [GitHub v0.1.0 release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.0) is published with its source archive, checksum, and validation report. Hub accepted the submission for packaging commit `473a33e736d52868f8d03abc4e462a205c59ce9d` and queued its build; automated tests and manual approval remain pending.
 
 ## Remaining release gates
 
-- Commit the final packaging metadata and validation report, then create the GitHub release while retaining the tested runtime and image identities.
-- Submit to Hub for its build/tests and manual review. Describe each interface's actual state separately.
+- Observe the submitted Hub build and automated test results; repair any release failures.
+- Await Runpod manual review. Keep the Hub listing described as pending until its listed state is confirmed.
 
 ## 1. Prepare the repository
 

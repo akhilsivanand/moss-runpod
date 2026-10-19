@@ -3,8 +3,9 @@
 The completed [publication report](validation.json) records the tested runtime
 and image. `python scripts/check_release.py --publish` passes. Image `0.1.0`
 is public and resolves to the tested digest below. The tested Pod template is
-public. Hub submission, automated testing, and manual approval are separate
-publication steps.
+public and the GitHub `v0.1.0` release is published. Hub accepted the submission
+and queued the release build; its automated tests and manual approval remain
+pending.
 
 | Check | Result |
 |---|---|
