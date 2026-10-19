@@ -4,29 +4,28 @@ The package has two delivery paths: an interactive ComfyUI Pod template and a qu
 
 ## Current status
 
-As of **2026-10-19**, [akhilsivanand/moss-runpod](https://github.com/akhilsivanand/moss-runpod) is public, GitHub publishing authorization is complete, and the maintainer's GitHub account is linked to Runpod. The first candidate's [source CI](https://github.com/akhilsivanand/moss-runpod/actions/runs/39234091302) passed 68 tests. Its [container build](https://github.com/akhilsivanand/moss-runpod/actions/runs/39234091053) and both in-image dependency/CPU-template checks passed. These results do not validate the corrected replacement image.
+As of **2026-10-19**, [akhilsivanand/moss-runpod](https://github.com/akhilsivanand/moss-runpod) is public, GitHub publishing authorization is complete, and the maintainer's GitHub account is linked to Runpod. Source CI passes 71 tests. The current image build, both in-image dependency/CPU-template checks, and anonymous registry verification pass.
 
-The first-candidate image is public and its digest was verified anonymously. It requires a gateway correction and is not the promoted 0.1.0 release:
+The public tag `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` has been promoted and verified to resolve to the tested digest:
 
 ```text
-ghcr.io/akhilsivanand/moss-comfyui@sha256:e537b3802e74ce6f560c3007cff039d392c8e91d8952ddf75a791241218a393b
+ghcr.io/akhilsivanand/moss-comfyui@sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec
 ```
 
-The first candidate's tested runtime source is `4f4071f610a457fb168236383e021c4090765fe5`. A private Pod template and fresh staging Pod were created; an empty initial model directory, CUDA 13.0, and SSH were verified. Its [deployment link](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) remains **private / replacement validation pending**; the final template ID may change.
+The tested runtime source is `37236a8e329d51adf2591c197a678f437650cebc`. The public Pod template pins this digest. A fresh 60 GB volume was created and model preparation completed on an NVIDIA L40S with 48 GB VRAM and CUDA 13.0. The baked application/gateway hashes match the intended source. Its [deployment link](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) is public and ready to deploy.
 
-On the first candidate's new Serverless endpoint, the primary suite completed fast at 768×768 (seed 42), photography at 1216×1664 (seed 424242), and img2img at 1024×1024 (seed 43). An additional second-LoRA-slot variant also passed, and all four new images were inspected. A blank-prompt job failed as expected. Cold preparation took about 7.4 minutes on one worker; this is not a startup-time guarantee.
+The current image's new Serverless suite passed all five checks: fast at 768×768 (seed 42), photography at 1216×1664 (seed 424242), img2img at 1024×1024 (seed 43), an additional second-LoRA-slot variant, and expected rejection of a blank prompt. All four new returned PNGs were inspected. One cold API job reported 420,479 ms (about 7 minutes) of delay before execution; this is one worker observation, not a startup-time guarantee.
 
-Actual browser testing exposed an incoming Host/Origin mismatch. The gateway was corrected to validate the trusted origin derived from `RUNPOD_POD_ID`, or an explicitly configured `MOSS_PUBLIC_ORIGIN`. Six gateway tests and the full updated 71-test suite pass; the corrected image build is pending. Record its new source revision and digest when available.
+Live browser checks pass: unauthenticated requests return 401, foreign origins return 403, an authenticated same-origin browser POST reaches the route's expected 405 response, and the WebSocket upgrades with 101 and delivers status. The landing page displays four cards, and the catalog exposes four workflows. All four native graph imports pass, including the prompt-enhanced graph's nested-subgraph serialization. All three Pod GPU presets completed successfully. Actual prompt-enhanced browser generation executed `TextGenerate` and returned a 1024×1024 PNG.
 
-Corrected-image Pod GPU generation, browser/native-template behavior, restart preservation, and queue verification remain pending. Promotion to `ghcr.io/akhilsivanand/moss-comfyui:0.1.0`, public Pod-template publication, a GitHub release, and Hub submission/approval have not occurred.
+Restart preservation passed: all eight task-created files retained their SHA256, all six model files retained their inode, modification time, and size, and the baked application hash was preserved. Although the provider's restart request returned an HTTP 500 timeout, the container process start at 11:04:27.9 UTC confirmed the restart. The post-restart check passed: readiness returned 200, unauthenticated HTTP/WebSocket requests returned 401, and authenticated browser POST/WebSocket checks returned 405/101 with a status event.
+
+The completed [publication report](validation.json) is present, and `python scripts/check_release.py --publish` passes. The tested Pod template is public. GitHub release creation and Hub submission/approval are the remaining publication steps.
 
 ## Remaining release gates
 
-- Build the corrected image, and repeat its dependency/CPU smoke and anonymous digest verification.
-- Validate the corrected image through the actual browser, native templates, Pod generation, restart preservation, and queue endpoint. Update or replace the private template and staging resources as required.
-- Test shared-cache scaling separately before claiming it is validated.
-- Record the corrected image digest and runtime revision with actual GPU/driver/CUDA details and new-job results in the publication report; do not carry forward first-candidate passes as replacement-image proof.
-- Run the publish gate, promote the tested Pod template, and create the GitHub release. Then submit to Hub for its build/tests and manual review. Describe each interface's actual state separately.
+- Commit the final packaging metadata and validation report, then create the GitHub release while retaining the tested runtime and image identities.
+- Submit to Hub for its build/tests and manual review. Describe each interface's actual state separately.
 
 ## 1. Prepare the repository
 
@@ -67,7 +66,7 @@ Create the template privately, then launch the fresh staging Pod from that exact
 
 Verify preparation status during first boot; all six model files must download, hash-check, and reach readiness without a model token. Check that requests for the browser, graph API, outputs, and WebSocket require authentication, while public startup health/status reveals only sanitized preparation information. Confirm that an empty password prevents exposure of an unprotected UI. Confirm that Runpod SSH initialization still works with a configured public key.
 
-For standard Runpod access, the corrected gateway derives the trusted public origin automatically from `RUNPOD_POD_ID`. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to the exact HTTP(S) origin, such as `https://comfy.example.com`, including a nondefault port if applicable and no path. Verify actual browser HTTP and WebSocket traffic through that origin; CPU node-schema checks do not exercise proxy origin handling.
+For standard Runpod access, the gateway derives the trusted public origin automatically from `RUNPOD_POD_ID`. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to the exact HTTP(S) origin, such as `https://comfy.example.com`, including a nondefault port if applicable and no path. Verify actual browser HTTP and WebSocket traffic through that origin; CPU node-schema checks do not exercise proxy origin handling.
 
 Log in as `moss`. Open `/?template=photography-bf16&source=moss` and each bundled workflow through the actual browser frontend. Submit new authorized jobs for photography, fast, and img2img; record the returned identifiers and observe only those jobs' events and outputs. Check the expected output dimensions, actual nonzero Destripe patches, and images. Do not inspect unrelated logs, global history, prior prompts, or existing user outputs.
 
@@ -91,23 +90,23 @@ Test worker replacement and document whether the selected endpoint storage retai
 
 ## 5. Publish the container and Pod template
 
-The first candidate is already public, but its gateway defect prevents promotion. Publish the corrected candidate, verify it anonymously, and complete the staging checks before promoting that exact tested digest to `:0.1.0`. A local candidate build can be pushed for staging with:
+The current digest is public and anonymously verified, and `:0.1.0` resolves to that exact tested image. For a future release, complete staging before promoting its image. A local candidate build can be pushed for staging with:
 
 ```sh
 docker push ghcr.io/akhilsivanand/moss-comfyui:candidate
 ```
 
-Record the corrected immutable digest and replace the first-candidate pin in `deploy/pod-template.json` before final validation. A public repository alone does not make a new GHCR package public; see [GitHub's package visibility instructions](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility). The JSON uses the [Runpod REST template schema](https://docs.runpod.io/api-reference/templates/POST/templates). Leave its empty password as a per-user setup requirement; do not publish a shared password. Leave the image's entry point and start command intact.
+Keep the tested immutable digest in `deploy/pod-template.json`, as the current file does. A public repository alone does not make a new GHCR package public; see [GitHub's package visibility instructions](https://docs.github.com/en/packages/learn-github-packages/configuring-a-packages-access-control-and-visibility). The JSON uses the [Runpod REST template schema](https://docs.runpod.io/api-reference/templates/POST/templates). Leave its empty password as a per-user setup requirement; do not publish a shared password. Leave the image's entry point and start command intact.
 
-The current template is private and its real deployment link is labeled pending in the README. Finish its fresh-volume generation, readiness/authentication, browser, and restart checks before setting visibility to public. Then remove the private/pending label. Do not add a badge that implies an approved Hub listing.
+The current template is public and its real deployment link is in the README. Fresh-volume generation, browser/authentication, restart preservation, post-restart health, and image promotion checks pass. Runpod returned `isPublic: true` for the tested template. Do not add a badge that implies an approved Hub listing.
 
 ## 6. Submit the Hub release
 
-Record completed staging results in `docs/validation.json` using the schema documented in `scripts/check_release.py`, resolve the registry identity, then run `python scripts/check_release.py --publish`. This checks the report's structure; keep the actual test evidence. Do not fill the report with assumed passes.
+The current staging results are recorded in `docs/validation.json`, and `python scripts/check_release.py --publish` passes. For later releases, update the report using the schema documented in `scripts/check_release.py` and rerun the gate. This checks the report's structure; retain the actual test evidence and never fill the report with assumed passes.
 
 Ensure `.runpod/hub.json` selects GPU execution, 60 GB disk, `ADA_24`, one GPU, CUDA 13.0, and `MOSS_MODE=serverless`. Ensure its tests match the released handler. The current metadata intentionally describes a queue API; the interactive Pod is a separate template.
 
-Create the `v0.1.0` GitHub release from the tested source commit. Sign in to the [Runpod Hub console](https://console.runpod.io/hub), choose **Add your repo → Get Started**, supply the actual GitHub URL, and follow the guided configuration. This is the documented submission route; creating a template through the REST template API does not itself submit or approve a Hub listing.
+Create the `v0.1.0` GitHub release from the final packaging commit, including the completed documentation and validation metadata. Its runtime remains the tested `37236a8e329d51adf2591c197a678f437650cebc`; record the packaging commit separately from the runtime/image identities. Sign in to the [Runpod Hub console](https://console.runpod.io/hub), choose **Add your repo → Get Started**, supply the actual GitHub URL, and follow the guided configuration. This is the documented submission route; creating a template through the REST template API does not itself submit or approve a Hub listing.
 
 Runpod builds and tests the release, then its team manually reviews it. Record the submission's actual status and keep it described as pending until approval is confirmed. No approval time is promised by the publishing guide. A pushed image or GitHub commit alone is not an approved Hub listing. Keep the listing description clear about first-boot downloads and experimental img2img. Add the real Hub deployment badge only after approval.
 

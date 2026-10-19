@@ -2,11 +2,11 @@
 
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
-**Release status — 2026-10-19:** the first candidate completed all three queue presets and an optional second-LoRA variant. Browser testing found a gateway origin mismatch; its correction and a replacement image are being validated. The Pod template remains private, version `0.1.0` promotion is pending, and Hub submission has not occurred. See [validation details](docs/validation-status.md).
+**Release status — 2026-10-19:** image `0.1.0` is available. Pod and queue generation, browser workflows, and restart preservation pass; source CI passes 71 tests. The ComfyUI Pod template is public. Hub submission and manual approval are pending. See [validation details](docs/validation-status.md).
 
 ## Open the ComfyUI browser UI
 
-[Open the staging Pod template — PRIVATE / replacement validation pending](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu). The current template is a first candidate; its image and deployment link may change before public release.
+[Deploy ComfyUI on Runpod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu). The public template pins the validated image.
 
 1. Deploy with one NVIDIA GPU with at least 24 GB VRAM, a CUDA 13.0-compatible host, 40 GB container disk, and a 60 GB persistent volume mounted at `/workspace`. The template sets `MOSS_VOLUME_GB=60`; update it to match the provisioned volume size if you resize the volume.
 2. Set `MOSS_MODE=pod` and your own `MOSS_PASSWORD` of at least 12 characters before starting. There is no default password. Prefer a Runpod Secret for the password. Leave the image's start command unchanged.
@@ -17,7 +17,7 @@ Initial startup downloads and verifies **23.51 GB** across six public model file
 
 Port 22 is available for SSH using Runpod's configured SSH key. Expose the password-protected gateway on 8188 for ComfyUI; the internal service on `127.0.0.1:8189` stays private. Public health endpoints return readiness and startup phase. Detailed download progress requires login.
 
-The corrected gateway derives the standard Runpod public origin automatically from the Pod identity. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com` (include a nondefault port if needed, without a path). This setting is part of the replacement candidate under validation.
+The gateway derives the standard Runpod public origin automatically from the Pod identity. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com` (include a nondefault port if needed, without a path).
 
 ## Choose a workflow
 
@@ -37,7 +37,7 @@ These settings are starting points. Prompt, seed, subject, and adapters affect t
 
 The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`; Hub submission is pending. Once the listing is approved, deploy it to create your own endpoint. The worker does not expose the browser UI.
 
-A worker downloads the same six files on first boot. Cold preparation took about **7.4 minutes on one tested worker**; startup time varies with downloads and the host. Ephemeral workers may repeat the downloads after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
+A worker downloads the same six files on first boot. One cold API job reported about **7 minutes of delay before execution**; this is one worker observation, and startup time varies with downloads and the host. Ephemeral workers may repeat the downloads after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
 
 Submit a job with a nonempty `prompt` and `preset` set to `photography`, `fast`, or `img2img`. For a small first test:
 
@@ -94,7 +94,7 @@ The default deployment's approved adapter list contains only the bundled Destrip
 │   ├── hub.json                  # Hub metadata and Serverless settings
 │   ├── tests.json                # real fast-preset generation test
 │   └── README.md                 # Hub listing instructions
-├── deploy/pod-template.json      # private Pod configuration with pinned image
+├── deploy/pod-template.json      # public Pod configuration with pinned image
 ├── docs/release.md               # build, validate, and publish gates
 ├── workflows/ui/                 # browser graphs
 ├── workflows/api/                # executable graph exports
@@ -113,6 +113,6 @@ Application files are baked under `/opt/moss`, ComfyUI under `/opt/comfyui`, and
 | `MOSS_VOLUME_GB` | Pod capacity check in decimal GB; `60` for the supplied 60 GB volume; adjust when resizing |
 | `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain; standard Runpod origin is derived automatically |
 
-The public **first-candidate** image is `ghcr.io/akhilsivanand/moss-comfyui@sha256:e537b3802e74ce6f560c3007cff039d392c8e91d8952ddf75a791241218a393b`. It requires the gateway correction before release; the replacement image and promotion to `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` are pending. See [the validation record](docs/validation-status.md) for the tested revision and exact scope. This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
+The public image `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` resolves to the tested digest `sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec`. The Pod configuration pins that digest. See [the validation record](docs/validation-status.md) for the tested revision and exact scope. This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI, and upstream workflow material retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).
