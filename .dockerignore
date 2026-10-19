@@ -21,6 +21,7 @@
 !scripts/base-ready.sh
 !scripts/healthcheck.py
 !scripts/smoke_container.py
+!scripts/validate_gpu.py
 **/__pycache__
 **/*.pyc
 **/.DS_Store

@@ -44,13 +44,14 @@ jobs:
         run: |
           # This is an isolated hosted runner, not a user's workstation.
           # Keep Docker and Python; the image build does not need these SDKs.
-          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc \
+            /opt/hostedtoolcache /usr/local/share/powershell /usr/local/.ghcup
           sudo apt-get clean
           docker image prune --all --force
           df -h /
           available=$(df --output=avail -B1 / | tail -1 | tr -d ' ')
-          if (( available < 40 * 1024 * 1024 * 1024 )); then
-            echo '::error::At least 40 GiB of free disk is required for this CUDA image build.'
+          if (( available < 50 * 1024 * 1024 * 1024 )); then
+            echo '::error::At least 50 GiB of free disk is required for this CUDA image build.'
             exit 1
           fi
 
@@ -92,6 +93,7 @@ jobs:
           /opt/moss/scripts/smoke_container.py --timeout 120
 
       - name: Sign in to GHCR for this repository
+        if: success()
         env:
           GHCR_TOKEN: ${{ github.token }}
         shell: bash

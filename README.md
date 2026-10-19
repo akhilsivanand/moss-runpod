@@ -2,7 +2,7 @@
 
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
-**Release status:** source package prepared for release; a completed container build and fresh-volume GPU validation are required before publication. The planned registry image below has not been published. See [release steps](docs/release.md).
+**Release status:** the [source repository](https://github.com/akhilsivanand5000/moss-runpod) is public. Image build, fresh-volume GPU validation, and Runpod deployment are pending; maintainer authorization is in progress. See [release steps](docs/release.md).
 
 Source validation: **65 tests passed**, and Docker's configuration check passed. See [the validation record](docs/validation-status.md) for the checks still pending.
 

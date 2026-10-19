@@ -2,9 +2,15 @@
 
 The package has two delivery paths: an interactive ComfyUI Pod template and a queue-based Runpod Hub API. Both use the root Dockerfile. This document is a publication checklist, not evidence that publication or GPU validation has happened.
 
+## Current status
+
+As of **2026-10-19**, the public [GitHub repository](https://github.com/akhilsivanand5000/moss-runpod) exists and its initial source is pushed to `main` at [cba6502](https://github.com/akhilsivanand5000/moss-runpod/commit/cba6502). The two CI workflow files are committed locally at `01beba5`; GitHub rejected their push because the current OAuth grant lacks the `workflow` scope. Device authorization to refresh that grant is pending. The Runpod account's GitHub link is also pending and must be completed for maintainer repository access.
+
+No container image build, new Pod or API endpoint deployment, Pod template creation, or Hub submission/approval has completed. The image name below is planned. Update these statements only after the corresponding operation is confirmed; authorization alone is not a completed release.
+
 ## Remaining release gates
 
-- Create the planned GitHub repository `akhilsivanand5000/moss-runpod`. The planned image is `ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0`; neither has been published by this preparation step.
+- Complete GitHub's workflow authorization and push the pending CI files; link the maintainer's GitHub account to Runpod. The source repository is already public. The planned image `ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0` has not been built or published.
 - Build the Linux AMD64 image and run the checks against the actual image.
 - Complete fresh-volume GPU validation for the browser and queue API, then restart and verify preservation.
 - Record the exact image digest, source commit, GPU/driver/CUDA versions, and results for these new tests.
@@ -50,6 +56,14 @@ Use a private staging deployment of the built image with one 24 GB NVIDIA GPU an
 Verify preparation status during first boot; all six model files must download, hash-check, and reach readiness without a model token. Check that requests for the browser, graph API, outputs, and WebSocket require authentication, while public startup health/status reveals only sanitized preparation information. Confirm that an empty password prevents exposure of an unprotected UI. Confirm that Runpod SSH initialization still works with a configured public key.
 
 Log in as `moss`. Open `/?template=photography-bf16&source=moss` and each bundled workflow through the actual browser frontend. Submit new authorized jobs for photography, fast, and img2img; record the returned identifiers and observe only those jobs' events and outputs. Check the expected output dimensions, actual nonzero Destripe patches, and images. Do not inspect unrelated logs, global history, prior prompts, or existing user outputs.
+
+On the fresh staging Pod, the bundled helper can run the three preset jobs against its internal ComfyUI service:
+
+```sh
+/opt/venv/bin/python /opt/moss/scripts/validate_gpu.py --run --output-dir /workspace/moss/validation/fresh-image-smoke-01
+```
+
+Use a new output directory each time. It saves only those jobs' returned images and a record with hardware details, dimensions, checksums, and client elapsed times. Run without `--run` to inspect the plan without GPU work. This supplements the actual browser, Serverless SDK, and restart checks; its record alone is not the final publication report.
 
 Change a user workflow, add a small test input and an output, then restart with the same volume. Verify that these task-created files survive, the user-edited workflow is preserved, models are reused, and the new image's application remains available under `/opt`. Confirm that existing older weights are preserved. Record cold preparation and actual inference separately; cached execution is not an inference benchmark.
 
