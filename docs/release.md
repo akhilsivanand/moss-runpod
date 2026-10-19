@@ -4,13 +4,13 @@ The package has two delivery paths: an interactive ComfyUI Pod template and a qu
 
 ## Current status
 
-As of **2026-10-19**, the public [GitHub repository](https://github.com/akhilsivanand5000/moss-runpod) exists and its initial source is pushed to `main` at [cba6502](https://github.com/akhilsivanand5000/moss-runpod/commit/cba6502). The two CI workflow files are committed locally at `01beba5`; GitHub rejected their push because the current OAuth grant lacks the `workflow` scope. Device authorization to refresh that grant is pending. The Runpod account's GitHub link is also pending and must be completed for maintainer repository access.
+As of **2026-10-19**, the release uses [akhilsivanand/moss-runpod](https://github.com/akhilsivanand/moss-runpod), matching the account approved for GitHub CLI publishing. The hosted build workflow is prepared and GitHub workflow/package authorization is complete. Linking this maintainer account to Runpod is still required for Hub submission.
 
 No container image build, new Pod or API endpoint deployment, Pod template creation, or Hub submission/approval has completed. The image name below is planned. Update these statements only after the corresponding operation is confirmed; authorization alone is not a completed release.
 
 ## Remaining release gates
 
-- Complete GitHub's workflow authorization and push the pending CI files; link the maintainer's GitHub account to Runpod. The source repository is already public. The planned image `ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0` has not been built or published.
+- Push the prepared build workflow and link the maintainer's GitHub account to Runpod. The source repository is already public. The planned image `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` has not been built or published.
 - Build the Linux AMD64 image and run the checks against the actual image.
 - Complete fresh-volume GPU validation for the browser and queue API, then restart and verify preservation.
 - Record the exact image digest, source commit, GPU/driver/CUDA versions, and results for these new tests.
@@ -40,9 +40,9 @@ docker build --check .
 The namespace uses the connected GitHub account. Run from this repository root:
 
 ```sh
-docker build --platform linux/amd64 --tag ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0 .
-docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0 -m moss_runtime.bootstrap --check-package
-docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0 /opt/moss/scripts/smoke_container.py
+docker build --platform linux/amd64 --tag ghcr.io/akhilsivanand/moss-comfyui:0.1.0 .
+docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand/moss-comfyui:0.1.0 -m moss_runtime.bootstrap --check-package
+docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand/moss-comfyui:0.1.0 /opt/moss/scripts/smoke_container.py
 ```
 
 The image must contain `/opt/comfyui`, `/opt/venv`, and `/opt/moss`. It must not depend on pre-existing `/workspace` application files. Inspect the final image for the pinned environment, upstream sources/licenses, required model nodes, and the intended entry point. Source-only checks do not establish that a container can start or generate an image.
@@ -80,7 +80,7 @@ Test worker replacement and document whether the selected endpoint storage retai
 After all staging checks pass, publish the image to the chosen public registry:
 
 ```sh
-docker push ghcr.io/akhilsivanand5000/moss-comfyui:0.1.0
+docker push ghcr.io/akhilsivanand/moss-comfyui:0.1.0
 ```
 
 Record the immutable digest and update `deploy/pod-template.json` to the tested public image identity, preferably its digest. The JSON uses the [Runpod REST template schema](https://docs.runpod.io/api-reference/templates/POST/templates). Leave its empty password as a per-user setup requirement; do not publish a shared password. Leave the image's entry point and start command intact.
