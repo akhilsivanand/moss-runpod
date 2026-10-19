@@ -21,6 +21,7 @@
 !scripts/base-ready.sh
 !scripts/healthcheck.py
 !scripts/smoke_container.py
+!scripts/check_native_dependencies.py
 !scripts/validate_gpu.py
 **/__pycache__
 **/*.pyc

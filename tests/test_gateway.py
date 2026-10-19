@@ -2,6 +2,7 @@ import asyncio
 import base64
 import json
 from pathlib import Path
+import re
 from urllib.parse import urlsplit
 
 import aiohttp
@@ -10,7 +11,9 @@ from aiohttp import web
 from aiohttp.test_utils import TestClient, TestServer
 
 from moss_runtime.gateway import (create_app, authorized, normalize_origin,
-                                 public_origin_from_environment, origin_allowed)
+                                 public_origin_from_environment, origin_allowed,
+                                 auth_from_environment, SESSION_COOKIE, SESSION_TTL,
+                                 session_cookie, session_authorized)
 
 ROOT = Path(__file__).resolve().parents[1]
 PASSWORD = 'test-password-for-gateway'
@@ -109,6 +112,179 @@ def test_unicode_password_and_invalid_login():
     assert not authorized(bad_user, secret)
 
 
+def test_native_auth_configuration_and_bounded_signed_sessions(monkeypatch):
+    monkeypatch.delenv('MOSS_PASSWORD', raising=False)
+    monkeypatch.delenv('JUPYTER_PASSWORD', raising=False)
+    with pytest.raises(ValueError, match='Runpod Connect authentication is missing'):
+        auth_from_environment()
+    monkeypatch.setenv('JUPYTER_PASSWORD', PASSWORD)
+    auth = auth_from_environment()
+    assert (auth.mechanism, auth.secret, auth.port) == ('token', PASSWORD, 8888)
+    monkeypatch.setenv('MOSS_PASSWORD', 'legacy-unique-password')
+    assert auth_from_environment().mechanism == 'basic'
+    assert auth_from_environment().port == 8188
+    for invalid in ('short', '{{ RUNPOD_SECRET_missing_password }}', 'password-with-newline\n'):
+        monkeypatch.setenv('MOSS_PASSWORD', invalid)
+        with pytest.raises(ValueError):
+            auth_from_environment()
+    monkeypatch.setenv('MOSS_PASSWORD', '')
+    monkeypatch.setenv('JUPYTER_PASSWORD', '{{ RUNPOD_SECRET_missing_token }}')
+    with pytest.raises(ValueError, match='unresolved Runpod Secret'):
+        auth_from_environment()
+    assert auth_from_environment('serverless').port == 8188
+
+    value = session_cookie(PASSWORD, now=1000)
+    assert session_authorized(value, PASSWORD, now=1000)
+    assert session_authorized(value, PASSWORD, now=1000 + SESSION_TTL - 1)
+    assert not session_authorized(value, PASSWORD, now=999)
+    assert not session_authorized(value, PASSWORD, now=1000 + SESSION_TTL)
+    assert not session_authorized(value, 'a-different-valid-password', now=1000)
+    assert not session_authorized(value[:-1] + ('0' if value[-1] != '0' else '1'), PASSWORD, now=1000)
+    assert not session_authorized('invalid', PASSWORD, now=1000)
+
+
+def test_entrypoint_keeps_login_secrets_only_in_gateway_parent(tmp_path):
+    import os
+    import shlex
+    import subprocess
+    import sys
+
+    # Substitute only external executable paths. Run the actual shell control
+    # flow and auth preflight, with a fake SSH/base hook and GPU-free gateway.
+    base = tmp_path / 'base-start'
+    base.write_text(f'#!{sys.executable}\n' + '''import json, os
+from pathlib import Path
+keys = ('MOSS_PASSWORD', 'JUPYTER_PASSWORD', 'JUPYTER_DISABLE_AUTH')
+Path(os.environ['MOSS_TEST_BASE_RECORD']).write_text(json.dumps({key: key in os.environ for key in keys}))
+Path(os.environ['MOSS_START_SIGNAL']).write_text('ready')
+''')
+    python = tmp_path / 'gateway-python'
+    python.write_text(f'#!{sys.executable}\n' + '''import json, os, sys
+from pathlib import Path
+if sys.argv[1:] == ['-']:
+    os.execv(sys.executable, [sys.executable, '-'])
+assert sys.argv[1:] == ['-m', 'moss_runtime.bootstrap']
+keys = ('MOSS_PASSWORD', 'JUPYTER_PASSWORD', 'JUPYTER_DISABLE_AUTH')
+Path(os.environ['MOSS_TEST_PARENT_RECORD']).write_text(json.dumps({key: key in os.environ for key in keys}))
+''')
+    for executable in (base, python):
+        executable.chmod(0o755)
+    entrypoint = tmp_path / 'entrypoint.sh'
+    entrypoint.write_text((ROOT / 'scripts/entrypoint.sh').read_text()
+                         .replace('/opt/venv/bin/python', shlex.quote(str(python)))
+                         .replace('/start.sh', shlex.quote(str(base))))
+    environment = {**os.environ, 'PYTHONPATH': str(ROOT / 'src'), 'MOSS_MODE': 'pod',
+                   'MOSS_PASSWORD': PASSWORD, 'JUPYTER_PASSWORD': 'provider-test-connect-token',
+                   'JUPYTER_DISABLE_AUTH': 'true',
+                   'MOSS_TEST_BASE_RECORD': str(tmp_path / 'base.json'),
+                   'MOSS_TEST_PARENT_RECORD': str(tmp_path / 'parent.json')}
+    result = subprocess.run(['bash', str(entrypoint)], env=environment, capture_output=True, text=True, timeout=5)
+    assert result.returncode == 0, result.stderr
+    assert json.loads((tmp_path / 'base.json').read_text()) == {
+        'MOSS_PASSWORD': False, 'JUPYTER_PASSWORD': False, 'JUPYTER_DISABLE_AUTH': False}
+    assert json.loads((tmp_path / 'parent.json').read_text()) == {
+        'MOSS_PASSWORD': True, 'JUPYTER_PASSWORD': True, 'JUPYTER_DISABLE_AUTH': True}
+
+
+def test_native_connect_token_exchange_preparation_and_cookie_transport(monkeypatch):
+    monkeypatch.delenv('MOSS_PASSWORD', raising=False)
+    monkeypatch.delenv('MOSS_PUBLIC_ORIGIN', raising=False)
+    monkeypatch.setenv('JUPYTER_PASSWORD', PASSWORD)
+    monkeypatch.setenv('RUNPOD_POD_ID', POD_ID)
+    native_origin = 'https://' + POD_ID + '-8888.proxy.runpod.net'
+    assert public_origin_from_environment(8888) == ('https', POD_ID + '-8888.proxy.runpod.net', 443)
+
+    async def run():
+        state = {'ready': False, 'phase': 'downloading', 'detail': 'Private workspace details'}
+        seen = []
+        async def endpoint(request):
+            seen.append((str(request.rel_url), dict(request.headers)))
+            if request.path == '/ws':
+                ws = web.WebSocketResponse()
+                await ws.prepare(request)
+                async for message in ws:
+                    await ws.send_str(message.data)
+                return ws
+            return web.json_response({'accepted': await request.json()})
+        upstream = web.Application()
+        upstream.router.add_route('*', '/{path:.*}', endpoint)
+        async with TestServer(upstream) as server:
+            app = create_app(state, ROOT, upstream=str(server.make_url('')).rstrip('/'))
+            async with TestClient(TestServer(app)) as client:
+                for path in ('/', '/lab', '/api/status', '/ws', '/object_info'):
+                    assert (await client.get(path, allow_redirects=False)).status == 401
+                for suffix in ('?token=invalid', '?token=' + PASSWORD + '&token=' + PASSWORD):
+                    assert (await client.get('/lab' + suffix, allow_redirects=False)).status == 401
+                # Runpod's Connect probe is healthy throughout model preparation,
+                # but only after its platform-issued token has been authenticated.
+                response = await client.get('/api/status', params={'token': PASSWORD})
+                assert response.status == 200
+                assert await response.json() == {'ready': False, 'phase': 'downloading'}
+                assert 'Private workspace details' not in await response.text()
+                assert 'Set-Cookie' not in response.headers
+                assert (await client.get('/api/status', params={'token': PASSWORD},
+                    headers={'Origin': 'https://console.runpod.io'})).status == 403
+                for path in ('/', '/lab', '/lab/'):
+                    response = await client.get(path, params={'token': PASSWORD, 'editor': '1'}, allow_redirects=False)
+                    assert response.status == 200
+                    assert 'Location' not in response.headers
+                    transition = await response.text()
+                    assert 'const destination="/?editor=1";' in transition
+                    assert "history.replaceState(null,'',destination);location.replace(destination)" in transition
+                    assert 'href="/?editor=1"' in transition
+                    assert PASSWORD not in transition
+                    assert 'token=' not in transition
+                    nonce = re.search(r'<script nonce="([A-Za-z0-9_-]+)">', transition).group(1)
+                    assert "script-src 'nonce-" + nonce + "'" in response.headers['Content-Security-Policy']
+                    assert "default-src 'none'" in response.headers['Content-Security-Policy']
+                    assert response.headers['Cache-Control'] == 'no-store'
+                    assert response.headers['Referrer-Policy'] == 'no-referrer'
+                    cookie = response.cookies[SESSION_COOKIE]
+                    assert cookie['secure'] and cookie['httponly'] and cookie['samesite'] == 'Strict'
+                    assert cookie['path'] == '/' and int(cookie['max-age']) == SESSION_TTL
+                    assert SESSION_COOKIE.startswith('__Host-') and not cookie['domain']
+                attack = '</script><script>alert("unsafe")</script>&other="value"'
+                response = await client.get('/lab', params={'token': PASSWORD, 'editor': attack, 'owned': '1'}, allow_redirects=False)
+                transition = await response.text()
+                assert response.status == 200 and transition.count('<script ') == 1
+                assert transition.count('</script>') == 1 and attack not in transition
+                assert PASSWORD not in transition and 'token=' not in transition
+                encoded_url = re.search(r'const destination=(.*?);history\.', transition).group(1)
+                clean_url = json.loads(encoded_url)
+                assert clean_url.startswith('/?editor=') and not clean_url.startswith('//')
+                assert '\\u0026' in encoded_url
+                # TestServer is HTTP, so supply the Secure browser cookie
+                # explicitly; production browsers send it over the HTTPS proxy.
+                headers = {'Cookie': SESSION_COOKIE + '=' + cookie.value,
+                           'Host': '10.2.3.4:8888', 'Origin': native_origin}
+                response = await client.get('/lab?editor=1', headers=headers, allow_redirects=False)
+                assert response.status == 303 and response.headers['Location'] == '/?editor=1'
+                assert (await client.get('/moss/status', headers=headers)).status == 200
+                assert (await client.get('/api/status?token=invalid', headers=headers)).status == 401
+                assert (await client.post('/prompt', headers=headers, json={})).status == 503
+                state.update(ready=True, phase='ready')
+                response = await client.post('/prompt?owned=1', headers={**headers,
+                    'Referer': native_origin + '/?token=' + PASSWORD}, json={'owned_test': True})
+                assert response.status == 200
+                assert (await response.json())['accepted'] == {'owned_test': True}
+                async with client.ws_connect('/ws?clientId=owned-native-test', headers=headers) as ws:
+                    await ws.send_str('owned native event')
+                    assert (await asyncio.wait_for(ws.receive(), 2)).data == 'owned native event'
+                foreign = {**headers, 'Origin': 'https://attacker.example',
+                           'X-Forwarded-Host': 'attacker.example'}
+                assert (await client.post('/prompt', headers=foreign, json={})).status == 403
+                with pytest.raises(aiohttp.WSServerHandshakeError) as error:
+                    await client.ws_connect('/ws', headers=foreign)
+                assert error.value.status == 403
+                tampered = cookie.value[:-1] + ('0' if cookie.value[-1] != '0' else '1')
+                assert (await client.get('/moss/status', headers={'Cookie': SESSION_COOKIE + '=' + tampered})).status == 401
+        assert len(seen) == 2
+        assert seen[0][0] == '/prompt?owned=1'
+        assert all('token=' not in url for url, _ in seen)
+        assert all(not ({'Authorization', 'Cookie', 'Referer', 'Origin'} & set(headers)) for _, headers in seen)
+    asyncio.run(run())
+
+
 def test_preparation_auth_and_serverless_isolation():
     async def run():
         state = {'ready': False, 'phase': 'downloading', 'detail': 'Preparing models'}
@@ -120,7 +296,7 @@ def test_preparation_auth_and_serverless_isolation():
                 assert (await client.get(path)).status == 401
             assert (await client.get('/', headers={'Authorization': 'Basic !!bad'})).status == 401
             response = await client.get('/', headers=AUTH)
-            assert 'Preparing models' in await response.text()
+            assert 'Downloading models' in await response.text()
             assert (await client.post('/prompt', headers=AUTH, json={})).status == 503
             state.update(ready=True, phase='ready')
             assert (await client.get('/readyz')).status == 200

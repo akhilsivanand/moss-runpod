@@ -103,6 +103,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
+Candidate container runtime
+---------------------------
+The simplified-launch candidate uses the official Python 3.11 slim-bookworm
+Linux AMD64 image pinned in Dockerfile, with a newly created hash-locked virtual
+environment. Python keeps its PSF license and Debian packages keep their own
+copyright files. Python source/license:
+  https://github.com/python/cpython/blob/v3.11.17/LICENSE
+Official image sources:
+  https://github.com/docker-library/python
+The Runpod initialization script is copied from the previous digest-pinned
+Runpod base. Its upstream MIT notice is retained in the candidate image:
+  https://github.com/runpod/containers/blob/main/LICENSE
+No CUDA development toolkit is added; binary Python packages retain the
+CUDA runtime libraries and their licenses recorded in the unchanged lock.
+This candidate still requires image-specific CPU and GPU validation before
+it replaces the published image.
+
 Other runtime components
 ------------------------
 Runpod's base container, the Runpod Python SDK, PyTorch, CUDA runtime, and

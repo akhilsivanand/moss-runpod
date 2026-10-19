@@ -1,0 +1,13 @@
+{
+  "startJupyter": true,
+  "startSsh": true,
+  "allowedCudaVersions": [
+    "13.0"
+  ],
+  "portsConfig": [
+    {
+      "name": "MOSS ComfyUI",
+      "port": 8888
+    }
+  ]
+}

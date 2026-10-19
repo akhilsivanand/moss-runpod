@@ -3,16 +3,22 @@ set -Eeuo pipefail
 
 case "${MOSS_MODE:-pod}" in
   pod)
-    MOSS_PASSWORD="${MOSS_PASSWORD:-}"
-    if [[ ${#MOSS_PASSWORD} -lt 12 ]]; then
-      printf '%s\n' 'Set MOSS_PASSWORD to a unique password of at least 12 characters in the Pod environment.' >&2
-      exit 2
-    fi
+    /opt/venv/bin/python - <<'PY'
+import sys
+from moss_runtime.gateway import auth_from_environment
+try:
+    auth_from_environment()
+except ValueError as error:
+    print(str(error), file=sys.stderr)
+    sys.exit(2)
+PY
     # Let the official Runpod base initialize SSH before the foreground app.
     # The hook acknowledges initialization; it does not background the app.
     MOSS_START_SIGNAL="$(mktemp /tmp/moss-base-ready.XXXXXX)"
     export MOSS_START_SIGNAL
-    /start.sh &
+    # Keep the provider's token in this parent for the MOSS gateway, while
+    # preventing the base image from starting a second service on port 8888.
+    env -u JUPYTER_PASSWORD -u JUPYTER_DISABLE_AUTH -u MOSS_PASSWORD /start.sh &
     base_pid=$!
     for attempt in {1..120}; do
       [[ -s "$MOSS_START_SIGNAL" ]] && break

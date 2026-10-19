@@ -14,7 +14,7 @@ from aiohttp import web
 
 from . import __version__
 from .assets import prepare_models
-from .gateway import create_app
+from .gateway import auth_from_environment, create_app
 from .workflows import install_workflows, atomic_write
 
 
@@ -72,9 +72,7 @@ async def serve(root, comfy_root, data_root, mode):
 
 
 async def serve_workspace(root, comfy_root, data_root, mode, model_data_root):
-    password = os.environ.get('MOSS_PASSWORD', '')
-    if mode == 'pod' and len(password) < 12:
-        raise RuntimeError('Set MOSS_PASSWORD to a unique password of at least 12 characters in the Pod environment.')
+    auth = auth_from_environment(mode)
     data_root.mkdir(parents=True, exist_ok=True)
     (data_root / 'state').mkdir(exist_ok=True)
     with (data_root / 'state/runtime.lock').open('w') as lock:
@@ -83,10 +81,10 @@ async def serve_workspace(root, comfy_root, data_root, mode, model_data_root):
         except BlockingIOError:
             raise RuntimeError('A MOSS runtime is already using this data directory.')
         state = {'phase': 'checking_gpu', 'detail': 'Checking the GPU and preparing your workspace.', 'ready': False}
-        app = create_app(state, root, password, mode)
+        app = create_app(state, root, mode=mode, auth=auth)
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
-        await web.TCPSite(runner, '0.0.0.0' if mode == 'pod' else '127.0.0.1', 8188).start()
+        await web.TCPSite(runner, '0.0.0.0' if mode == 'pod' else '127.0.0.1', auth.port).start()
         children = []
         stop = asyncio.Event()
         loop = asyncio.get_running_loop()
@@ -113,6 +111,7 @@ async def serve_workspace(root, comfy_root, data_root, mode, model_data_root):
             atomic_write(extra, ('moss_bundled:\n  custom_nodes: ' + json.dumps(str(comfy_root / 'custom_nodes')) + '\n').encode())
             env = os.environ.copy()
             env.pop('MOSS_PASSWORD', None)
+            env.pop('JUPYTER_PASSWORD', None)
             env.update(MOSS_ROOT=str(root), MOSS_DATA_DIR=str(data_root), COMFY_URL='http://127.0.0.1:8189')
             command = [sys.executable, '-u', str(comfy_root / 'main.py'), '--listen', '127.0.0.1', '--port', '8189',
                        '--base-directory', str(data_root), '--user-directory', str(data_root / 'user'),

@@ -1,5 +1,7 @@
 # MOSS-Image on Runpod
 
+> **Simplified-launch candidate:** automatic Runpod Connect login and visible startup progress are being validated on this branch. The public `0.1.0` template remains unchanged. See [candidate notes](docs/simple-launch.md).
+
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
 **Release status — 2026-10-19:** image `0.1.0` is available. Pod and queue generation, browser workflows, and restart preservation pass; source CI passes 71 tests. The ComfyUI Pod template and [GitHub release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.0) are public. [Hub submission](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is accepted; Runpod build/tests and manual approval are pending. See [validation details](docs/validation-status.md).

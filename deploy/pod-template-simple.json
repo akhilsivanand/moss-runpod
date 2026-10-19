@@ -1,0 +1,20 @@
+{
+  "name": "MOSS-Image SFT ComfyUI \u2014 simplified launch candidate",
+  "category": "NVIDIA",
+  "imageName": "ghcr.io/akhilsivanand/moss-comfyui:candidate-simple-connect",
+  "containerDiskInGb": 60,
+  "volumeInGb": 60,
+  "volumeMountPath": "/workspace",
+  "ports": [
+    "8888/http",
+    "22/tcp"
+  ],
+  "dockerEntrypoint": [],
+  "dockerStartCmd": [],
+  "env": {
+    "MOSS_MODE": "pod"
+  },
+  "isPublic": false,
+  "isServerless": false,
+  "readme": "# MOSS ComfyUI \u2014 candidate\n\nThis configuration is under validation and is not the published image.\n\nThe intended flow is Deploy, then Connect to MOSS ComfyUI, then choose a workflow. No separate MOSS password or model-download token is required. First startup prepares the models and shows progress.\n\nUse a CUDA 13.0-compatible NVIDIA GPU with at least 24 GB VRAM. A 60 GB container disk allows first use without a storage edit. To keep models and images after stopping, select persistent storage mounted at /workspace in Runpod Storage.\n\nNative connection settings are in the companion console metadata. Do not publish until its candidate image and native Connect flow are verified.\n"
+}
