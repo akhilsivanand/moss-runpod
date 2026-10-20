@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "version": "0.1.2",
+  "recorded_at": "2026-10-20T13:11:40.005563+00:00",
+  "runtime_source_revision": "a14d011be32b86447a06c88531f0c334b9b86f08",
+  "packaging_revision": "d1ea3b1469420d0ed374a5268673d85ef7ae222c",
+  "image": {
+    "digest": "sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671",
+    "stable_tag": "ghcr.io/akhilsivanand/moss-comfyui:0.1.2",
+    "anonymous_manifest_bytes_match": true,
+    "promotion_workflow_run": 39425943363
+  },
+  "github_release": {
+    "url": "https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.2",
+    "anonymous_release_and_target_verified": true,
+    "assets": [
+      {
+        "name": "moss-runpod-0.1.2.zip",
+        "bytes": 290934,
+        "sha256": "3bd7b6c544a9efc3d6476361ae44df773fb759d6261eed0ed6a1845a4d7ec269",
+        "public_download_bytes_match": true
+      },
+      {
+        "name": "moss-runpod-0.1.2.zip.sha256",
+        "bytes": 88,
+        "sha256": "db25e3f14cbc6cf8cea11aa81a6aeaa5982f57cca4c34c68806a4cb5a8981030",
+        "public_download_bytes_match": true
+      },
+      {
+        "name": "validation-0.1.2.json",
+        "bytes": 14964,
+        "sha256": "a62b55065b16a40c2993aec79f5a69a5218d9b4dc2f8226b7d29fe18c3d7e24c",
+        "public_download_bytes_match": true
+      }
+    ],
+    "fresh_signed_out_browser_notes_links_and_three_assets_visible": true
+  },
+  "public_pod_template": {
+    "url": "https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu",
+    "anonymous_metadata_http_status": 200,
+    "image_startup_native_connection_storage_and_readme_verified": true,
+    "fresh_signed_out_page_rendered": true,
+    "authenticated_console_launch_tested": false,
+    "scope": "Public selected-template page checked behind sign-in; separate actual task-owned GPU deployments and ComfyUI browser use validated."
+  },
+  "hub": {
+    "normal_submission_accepted": true,
+    "submission_count": 1,
+    "indexed_source_matches_packaging_revision": true,
+    "build_state": "FAILED",
+    "build_duration_seconds": 13.339,
+    "image_produced": false,
+    "tests_started": false,
+    "listed": false,
+    "reject_note_present": false,
+    "approval_confirmed": false,
+    "diagnostic_scope": "Build metadata only; no build logs, Pod logs or history read."
+  },
+  "notes": [
+    "This post-upload publication record supplements the immutable runtime validation report attached to the release.",
+    "The release ZIP and validation asset remain unchanged; later publication and review status is recorded on repository main."
+  ]
+}

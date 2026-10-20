@@ -25,7 +25,7 @@ These are starting settings, with no claim of universal image-quality superiorit
 
 ## Use the queue API
 
-The [Runpod Hub listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is a **Serverless queue API**. Its availability depends on Runpod's build, tests and review. Deploy an available listing to create your own endpoint; the worker does not expose the browser editor. Use the Pod link above for ComfyUI.
+The [Runpod Hub listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is a **Serverless queue API**. The 0.1.2 Hub build failed before tests; it is not yet listed or approved. See [validation status](docs/validation-status.md). Deploy an available listing to create your own endpoint; the worker does not expose the browser editor. Use the Pod link above for ComfyUI.
 
 Submit this small first test to `https://api.runpod.ai/v2/ENDPOINT_ID/run`, with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`:
 
@@ -108,6 +108,6 @@ docs/                         Release procedure and dated validation evidence
 
 ComfyUI is exposed through the authenticated **8888** gateway; Runpod SSH uses port 22. The internal ComfyUI service remains private. Standard Runpod origins are derived automatically.
 
-The tested `0.1.2` image passed fresh GPU presets, all four native workflow imports, prompt enhancement, browser Run-button generation, queue API checks and restart preservation. Exact evidence is recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). The stable image and public Pod template use this tested version. Versioned source archives and public reports are distributed through [GitHub releases](https://github.com/akhilsivanand/moss-runpod/releases). The [release procedure](docs/release.md) separates publication from Runpod Hub approval.
+The tested `0.1.2` image passed fresh GPU presets, all four native workflow imports, prompt enhancement, browser Run-button generation, queue API checks and restart preservation. Exact evidence is recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). The stable image and public Pod template use this tested version. The [0.1.2 source archive and public report](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.2) passed anonymous download verification; see the [publication record](docs/publication-0.1.2.json). The [release procedure](docs/release.md) separates publication from Runpod Hub approval.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI and upstream workflows retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

@@ -1,6 +1,6 @@
 # Releasing MOSS-Image 0.1.2
 
-Version 0.1.2 corrects the Pod workspace to `/workspace/ComfyUI`, exposes `models/loras` where users expect it and aliases the installed application's model directory to that same tree. One image serves the authenticated ComfyUI Pod and the separate Serverless queue API. Runtime validation has passed. The stable image and public Pod template are published and independently verified; Hub submission remains held until the GitHub release assets are verified.
+Version 0.1.2 corrects the Pod workspace to `/workspace/ComfyUI`, exposes `models/loras` where users expect it and aliases the installed application's model directory to that same tree. One image serves the authenticated ComfyUI Pod and the separate Serverless queue API. Runtime validation has passed. The stable image, public Pod template and GitHub release assets are published and independently verified. Hub submission, build, tests and external approval remain separate steps.
 
 ## Package and image
 
@@ -76,3 +76,5 @@ Promote the **same tested manifest** to `:0.1.2`; verify anonymous access and di
 Package the final source, validate the extracted archive and publish GitHub `v0.1.2` with the source ZIP, SHA256 file and public report. Download public assets and verify their bytes. Record the packaging commit separately from the tested runtime revision.
 
 Resume normal [Runpod Hub publication](https://docs.runpod.io/hub/publishing-guide) only after release verification. Check actual build, test, listing and review state. Submission, image publication and manual approval are separate steps; approval remains external. The [revenue-sharing program](https://docs.runpod.io/hub/revenue-sharing) awards Runpod credits and guarantees no earnings.
+
+For 0.1.2, the [post-upload publication record](publication-0.1.2.json) records the packaging commit, verified public asset hashes and current Hub state. It supplements the immutable runtime report attached to the release.
