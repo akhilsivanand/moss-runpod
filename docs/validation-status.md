@@ -1,60 +1,67 @@
 # Validation status — 2026-10-20
 
-**0.1.2 layout correction is being validated.** New Pods will use `/workspace/ComfyUI/models/loras`, with the installed application pointing to the same model tree. Existing model weights and user data must be preserved. The completed checks below describe 0.1.1; they do not validate the changed runtime. Hub submission is held until the correction passes its own checks.
+**0.1.2 corrects the workspace and model paths.** Pod data now uses `/workspace/ComfyUI`, with LoRAs under **`/workspace/ComfyUI/models/loras`**. The installed application's `/opt/comfyui/models` points to that same model tree.
 
-Release 0.1.1 uses runtime source `0bf51872c7b9350a40f96cd8295d318bcef8b181` and the tested immutable image:
+Runtime source is `a14d011be32b86447a06c88531f0c334b9b86f08`; the exact image is:
 
 ```text
-ghcr.io/akhilsivanand/moss-comfyui@sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1
+ghcr.io/akhilsivanand/moss-comfyui@sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671
 ```
 
-The public Pod template and stable `0.1.1` image tag use the tested immutable image. GitHub release assets and Runpod Hub status are tracked separately; successful deployment tests do not establish Hub approval.
+Fresh Pod generation, native browser, prompt enhancement and restart checks passed on the corrected image. Publication of the corrected release is pending, and Hub submission is held. The historical [0.1.0](validation-0.1.0.json) and [0.1.1](validation-0.1.1.json) reports remain separate evidence for their earlier runtimes.
 
-| Check | Result |
+| Check | 0.1.2 result |
 |---|---|
-| Source checks | 79 passed |
+| Source suite | 89 tests passed |
 | Built image | Linux AMD64 build and both in-image CPU gates passed |
-| Native dependencies and GPU driver | Final task-owned Pod passed the 409-ELF dependency check and GPU driver probe; see validation.json for exact hardware/runtime versions |
-| Registry | Anonymous immutable-image verification passed |
-| Image transfer | 3,747,665,350 compressed bytes; 64.19% smaller than 0.1.0's 10,465,719,607 bytes |
-| Native Runpod connection | Platform-issued token and startup page passed on fresh Pods with and without a persistent attachment |
-| No-volume first use | Ready after 452.7 seconds on one host; no storage/password/terminal edit required |
-| No-volume browser generation | Fresh, uncached UI generation passed; a repeat network capture recorded 11 cached resources separately |
-| Final Pod GPU presets | Fast 768×768, photography 1216×1664 and img2img 1024×1024 passed |
-| Four native browser workflows | All four imports and graph checks passed before restart |
-| Prompt-enhanced browser generation | Fresh 1024×1024 output passed at 25 steps/CFG 2.5 through native graphToPrompt and TextGenerate; executing/success events confirmed uncached execution |
-| Public HTTP/WebSocket security | HTTP/WebSocket 401 without authentication, invalid-token 401, same-origin POST 405/WebSocket 101 and foreign-origin 403 for both passed |
-| Restart preservation | A new process was confirmed; eight task-file hashes, six model stat records and two application hashes were preserved |
-| Post-restart health and transport | Health READY; public authentication, same-origin and foreign-origin HTTP/WebSocket checks passed |
-| Full post-restart browser retest | All four workflows passed the native browser suite after restart |
-| Fresh queue API | All three presets, optional bundled second LoRA and expected empty-prompt rejection passed via Runpod SDK 1.12.0 |
-| API output integrity | Four returned PNGs verified, hashed and viewed; sizes 768², 1216×1664, 1024² and 768² |
-| Disposable API cleanup | Task-created endpoint/source template deleted; 404 verified; existing published endpoint/template unchanged |
-| Public Pod template | Verified public with the tested immutable image, explicit startup command, native Connect and updated README; fresh unsigned browser rendered the selected template |
-| Stable image 0.1.1 | Exact tested manifest promoted through [GitHub Actions](https://github.com/akhilsivanand/moss-runpod/actions/runs/39417149680); anonymous digest verification passed |
-| GitHub v0.1.1 release | Source ZIP and extracted publication checks passed; public artifacts are tracked on the [release page](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.1) |
-| Runpod Hub | New release requires Hub build, test and external review; check the [listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) for availability |
+| Container-only model layout | Exact image passed the Docker-overlay CPU check with no persistent mounts: baked files preserved, canonical models real, alias fixture visible and helper idempotent |
+| Registry identity | Anonymous exact-image verification passed |
+| Fresh GPU/dependency preflight | 409-ELF dependency and GPU preflight checks passed |
+| Existing Pod data migration | Eight task-file SHA256 values, all six model inode/size/mtime records and the uploaded adapter preserved |
+| Canonical model layout | Real `/workspace/ComfyUI` root and `/opt/comfyui/models` alias verified; old managed root absent after upgrade |
+| Upgraded Pod native browser | All four native imports passed; both LoRA choices visible; exactly one real Run-button job produced a verified 1024×1024 PNG |
+| Fresh Pod model preparation | Ready observed 1,119.0 seconds after the deployment response; six pinned models prepared |
+| Fresh Pod GPU presets | New fast 768×768, photography 1216×1664 and img2img 1024×1024 jobs passed |
+| Fresh native browser workflows | All four imports/serialization checks passed; a new 1024×1024 prompt-enhanced job passed with uncached TextGenerate execution |
+| Public HTTP/WebSocket checks | Corrected image passed unauthenticated/invalid-token 401, same-origin POST 405/WebSocket 101 and foreign-origin HTTP/WebSocket 403 |
+| Same-volume restart preservation | New container process; eight task-file hashes, six model inode/size/mtime records and two application hashes preserved; readiness and all four browser imports passed afterward |
+| Fresh queue API | All three presets, optional second bundled LoRA and expected empty-prompt rejection passed |
+| API response integrity | Four new PNGs decoded, hashed, seed-checked and viewed |
+| API runtime evidence | SDK 1.12.0; package version 0.1.2; actual worker image matched the exact digest; RTX 4090 observed |
+| API configuration | Observed 60 GB ephemeral disk, no persistent volume, min 0/max 1/idle 30 and CUDA host minimum 13.0 |
+| Disposable API cleanup | Endpoint/source template deleted and 404 verified; existing published API resources unchanged |
+| Stable 0.1.2 tag and public Pod template | Pending promotion and recorded verification |
+| GitHub v0.1.2 release | Pending packaging, publication and public-asset verification |
+| Runpod Hub | Submission held; build, test and external approval not established |
 
-The public deploy page and template metadata were checked in a fresh unsigned browser. Runpod's sign-in modal prevented an authenticated console launch; equivalent task-owned GPU deployments were created through the API, and actual ComfyUI use was validated in the browser.
+## Layout preservation scope
 
-## Pod observations
+The actual existing-Pod upgrade moved the recognized managed workspace to the standard root, kept the six model files' inode/size/mtime records, preserved eight task-created file hashes and retained the uploaded adapter. The new directory is real and the installed model path resolves to it. The upgraded Pod also passed all four native browser imports, LoRA chooser visibility and a real Run-button generation. That browser test waited for a zero queue count and used only bundled Destripe; the uploaded adapter was not executed or inspected.
 
-Three newly submitted preset jobs completed on the final Pod: fast in 28.696 seconds, photography in 54.612 seconds and img2img in 20.582 seconds. These are client timings for these jobs, not speed guarantees or image-quality benchmarks.
+The separate fresh Pod passed all three GPU presets, prompt enhancement and a same-image restart. The restart preserved eight task-file hashes, six model inode/size/mtime records and two application hashes; a new process, readiness and all four native imports were verified. Model stat preservation is separate from the model verification performed during startup.
 
-Cold startup varied across hosts. The fresh Pod without a persistent volume became ready after **452.7 seconds (about 7 min 33 s)**. On the final persistent Pod, readiness was established no later than **1,134.8 seconds (about 18 min 55 s)** after creation, using the first new GPU-validation record as the upper bound. A separate earlier attempt encountered a registry TLS handshake failure while fetching image configuration and was retired. These observations include host/image-transfer effects and do not establish a fixed launch time.
+If the destination already exists, different same-name model files conflict, or unexpected links are present, migration preserves the data and stops rather than merging or overwriting it. Adapter preservation does not establish compatibility or inference quality for an arbitrary uploaded model.
 
-## Queue API observations
+## Fresh Pod observations
 
-The fresh endpoint used one RTX 4090 GPU, a 60 GB ephemeral disk, no persistent model volume and worker settings of min 0, max 1 and an idle timeout of 30 seconds. A CUDA host minimum of 13.0 accepted available hosts; API worker metadata did not independently establish the exact NVIDIA driver version.
+The fresh Pod used an RTX 4090 with NVIDIA driver 595.91.07, PyTorch 2.13.0+cu130 and CUDA runtime 13.0. The first ready observation was **1,119.0 seconds (18 min 39 s) after the deployment response**. This excludes time spent in the deployment request before its response and is not a complete click-to-ready measurement. The progress page was observed during model download; a later ready browser pass and a post-restart browser pass each imported all four workflows.
+
+The three preset jobs took 20.026 seconds for fast, 50.437 seconds for photography and 18.148 seconds for img2img at the tested dimensions. These are client wall times, including local request handling, not isolated GPU execution measurements. The prompt-enhanced browser job separately completed with fresh TextGenerate execution. All returned test images were decoded and inspected. Host and network conditions affect startup and execution time.
+
+The separate [container-layout CPU check](https://github.com/akhilsivanand/moss-runpod/actions/runs/39424748372) passed on the exact image without persistent mounts. It verified baked-file preservation, the real canonical model directory, alias access to an opaque LoRA fixture and repeated-helper idempotence. This is filesystem evidence; the GPU jobs above ran on the fresh Pod with its attached volume.
+
+## Fresh queue API observations
+
+The five cases ran sequentially on the new immutable image without an idle replacement between cases. The endpoint used the image's new default cache paths and isolated worker workspace; no old-path override was supplied.
 
 | Check | Queue delay | Execution | Result |
 |---|---:|---:|---|
-| Exact Hub fast input, 768×768 | 326,179 ms | 16,723 ms | Valid PNG, seed 42 |
-| Photography, 1216×1664 | 138 ms | 46,991 ms | Valid PNG, seed 424242 |
-| Img2img, 1024×1024 | 150 ms | 14,914 ms | Valid PNG, seed 43; input was only the new fast image |
-| Optional second Destripe LoRA at 0.25, 768×768 | 336,267 ms | 13,050 ms | Valid PNG, seed 44 |
-| Empty prompt | 126 ms | 127 ms | Correctly rejected |
+| Exact Hub fast input, 768×768 | 206,571 ms | 15,543 ms | Valid PNG, seed 42 |
+| Photography, 1216×1664 | 143 ms | 47,656 ms | Valid PNG, seed 424242 |
+| Img2img, 1024×1024 | 158 ms | 14,322 ms | Valid PNG, seed 43; input was only the new fast image |
+| Optional second Destripe LoRA at 0.25, 768×768 | 139 ms | 5,321 ms | Valid PNG, seed 44 |
+| Empty prompt | 131 ms | 140 ms | Correctly rejected |
 
-The second cold delay followed worker idle shutdown between test collection and the next submission. Queue delay includes cold preparation and scheduling; it is separate from generation execution. These are observations, not timing guarantees. A replacement ephemeral worker may download all 23.51 GB again. Shared-cache concurrency remains untested.
+The 206.571-second cold queue delay includes worker preparation and scheduling. Execution time is separate. These are observations, not launch-time or generation-speed guarantees. Replacement ephemeral workers can download all 23.51 GB again; shared-cache concurrency remains untested. API metadata does not independently prove the exact NVIDIA driver version.
 
-These results establish tested execution and response integrity without claiming universal image-quality superiority. The current [publication report](validation.json) must record only completed 0.1.1 checks. The archived [0.1.0 report](validation-0.1.0.json) applies to its earlier runtime and is not evidence for 0.1.1.
+The current [validation report](validation.json) must include only completed 0.1.2 evidence. Earlier browser, restart and timing results remain in the archived reports rather than being reused for this release. Successful local checks do not establish Runpod Hub approval.

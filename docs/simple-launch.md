@@ -1,29 +1,46 @@
-# Simple launch — 0.1.1
+# Simple launch — 0.1.2
 
-**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Runpod supplies the connection token. No separate password, terminal command, download token or storage edit is needed for first use.
+**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Runpod supplies the connection token. No separate password, terminal command, model-download token or storage edit is needed for first use.
 
-The preparation page appears before model downloads finish and shows phases, downloaded GB and percentage. The six pinned model files total 23,509,579,072 bytes. One fresh Pod without persistent storage became ready after **452.7 seconds (about 7 min 33 s)**. On another Pod with persistent storage, readiness was established no later than **1,134.8 seconds (about 18 min 55 s)** after creation. The latter is an upper bound taken from the first new GPU-validation record. A separate earlier attempt encountered a registry TLS handshake failure and was retired. Placement, image transfer and model-download speeds vary; these are observations rather than a launch-time guarantee.
+The preparation page shows the startup phase, downloaded GB and percentage while six pinned model files totaling **23.51 GB** download and verify. The fresh 0.1.2 Pod was confirmed ready **1,119.0 seconds (18 min 39 s) after the deployment response**, excluding allocation time before that response. Placement, image transfer and download speeds vary; first startup is not instant.
 
-The 0.1.1 image transfers 3,747,665,350 compressed bytes, 64.19% less than 0.1.0's 10,465,719,607 bytes. This reduces image transfer; model downloads still account for 23.51 GB on a cold cache.
+## Familiar ComfyUI folders
 
-## The startup script
+The Pod's data root is **`/workspace/ComfyUI`**:
 
-[`scripts/entrypoint.sh`](../scripts/entrypoint.sh) is baked into the image at **`/opt/moss/scripts/entrypoint.sh`**. The image CMD and the template's explicit start command both select it. The image retains `/usr/bin/tini --` as its entry point. No external startup-script download is required.
+```text
+/workspace/ComfyUI/
+├── models/
+│   └── loras/          # upload compatible SFT LoRA files here
+├── input/
+├── output/
+├── user/
+├── custom_nodes/
+├── temp/
+├── cache/
+└── state/
+```
 
-The script initializes Runpod SSH, starts the authenticated progress page, prepares the models and supervises ComfyUI. The gateway uses port 8888, labeled **MOSS ComfyUI**; SSH uses port 22. The internal ComfyUI service remains private.
+Use **`/workspace/ComfyUI/models/loras`**, with `loras` plural. The installed application's `/opt/comfyui/models` is an alias to the same model tree. Uploading through either model path reaches the same files. Refresh the model list or reload the editor, select the compatible SFT adapter in the second LoRA slot and set a nonzero strength. The queue API additionally requires each adapter to be in its approved catalog.
 
-Runpod's native connection setting supplies `JUPYTER_PASSWORD`. MOSS exchanges that token for a secure HTTP-only browser session and removes the token from the URL. The image prevents a separate Jupyter server from competing for port 8888. Existing explicit-password deployments remain supported; the separate Serverless API uses Runpod API authentication.
+The application is baked under `/opt/moss`, ComfyUI under `/opt/comfyui` and Python under `/opt/venv`. Mounting `/workspace` does not hide that installed code.
 
-## Optional persistent storage
+## Existing volumes and retention
 
-The 60 GB container disk fits a fresh first-use installation without an attached volume. To keep models, edited workflows and images after stopping, choose persistent storage mounted at `/workspace` in Runpod Storage. The current launch screen chooses storage independently; a legacy template volume field does not prove a persistent attachment was created. Replacing/deleting a Pod needs storage that outlives that Pod.
+An upgrade recognizes the earlier managed `/workspace/moss` workspace and moves it to `/workspace/ComfyUI` when the destination is absent. It preserves data rather than merging conflicting roots or overwriting different same-name model files. Uploads in the installed application's old model tree are preserved before that tree becomes an alias. Unexpected links or conflicting files stop the migration for review.
 
-Mutable data is stored under `/workspace/moss`; the installed application remains under `/opt`, so a workspace mount does not hide it. Preserve retained user files when upgrading. A volume containing earlier checkpoints can need more capacity than a fresh install.
+The existing Pod's actual upgrade preserved eight task-file hashes, all six model inode/size/mtime records and the uploaded adapter. The new canonical directory is real, `/opt/comfyui/models` points to it, and the old managed root is absent. All four native workflows opened after the upgrade; the uploaded adapter appeared in the LoRA chooser. One real browser Run-button test produced a verified 1024×1024 image using bundled Destripe.
 
-## Validation and host compatibility
+A **60 GB container disk** fits first use without an attached volume. To retain models, workflows and images after stopping, choose persistent storage mounted at `/workspace` in Runpod Storage. The current launch screen selects storage independently; the template's legacy volume field alone does not guarantee an attachment. Preserve retained storage when stopping. Replacing or deleting a Pod needs storage that outlives that Pod.
 
-Actual native token/startup checks passed on fresh Pods with and without persistent storage. The source suite passed 79 checks; the built image passed both CPU gates and the final task-owned Pod passed the 409-ELF dependency and GPU driver checks. The final Pod completed three preset generations, all four browser imports, fresh prompt-enhanced generation and public HTTP/WebSocket checks. Restart preserved eight task files, six model records and two application hashes, with a new process and healthy service confirmed afterward. The full four-workflow browser retest after restart also passed.
+## Included startup script
 
-The queue API passed three presets, optional second LoRA and empty-prompt rejection. The public Pod template uses the tested immutable image. See [validation status](validation-status.md) and the [release report](validation.json) for the exact tested image and completed scope; historical 0.1.0 evidence does not validate 0.1.1.
+[`scripts/entrypoint.sh`](../scripts/entrypoint.sh) is baked into the image at **`/opt/moss/scripts/entrypoint.sh`** and selected by both the image CMD and template start command. It initializes Runpod SSH, starts the authenticated progress page, prepares models and supervises ComfyUI. No external startup-script download is required. The image retains `/usr/bin/tini --` as its entry point.
 
-The runtime retains pinned CUDA 13.0 user libraries. Deployment metadata allows compatible host versions, including available 13.2-capable hosts. See [NVIDIA CUDA compatibility](https://docs.nvidia.com/cuda/archive/13.0.1/cuda-toolkit-release-notes/index.html) and [Runpod CUDA filters](https://docs.runpod.io/sdks/graphql/manage-pods#filter-by-cuda-version).
+The gateway uses port **8888**, labeled **MOSS ComfyUI**; SSH uses port 22. Runpod's native connection setting supplies the token, which MOSS exchanges for a secure HTTP-only browser session and removes from the URL. The internal ComfyUI service stays private. The separate Serverless API uses Runpod API authentication.
+
+## Validation and publication
+
+The 0.1.2 source suite passed 89 tests. The exact image passed both CPU gates and fresh GPU/dependency preflight. New fast, photography and img2img jobs passed, all four native workflows opened, and the official prompt-enhanced graph generated a new image. All five fresh queue API checks passed, including a real optional second-LoRA job and empty-prompt rejection. A same-volume restart preserved eight task-file hashes, six model inode/size/mtime records and two application hashes; readiness and all four browser imports passed again afterward.
+
+Publication and Hub submission remain pending. See [validation status](validation-status.md), the [current report](validation.json) and the [release procedure](release.md). The runtime retains pinned CUDA 13.0 user libraries with compatible host filters, including 13.2-capable hosts; actual GPU checks remain part of each release.

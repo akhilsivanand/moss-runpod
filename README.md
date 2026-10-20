@@ -1,14 +1,14 @@
 # MOSS-Image on Runpod
 
-**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Generate images in the browser or use the separate Runpod Hub queue API. Both use the same image and pinned MOSS-Image SFT models.
+**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Generate images in the browser or use the separate Runpod Hub queue API. Both use the same pinned MOSS-Image SFT model bundle.
 
 ## Open ComfyUI
 
-1. [Deploy the MOSS ComfyUI Pod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) with one supported NVIDIA GPU with at least 24 GB VRAM.
+1. [Deploy the MOSS ComfyUI Pod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) with one **RTX 4090 (24 GB)**, the validated GPU.
 2. Open **Connect → MOSS ComfyUI**. Runpod signs you in through its connection link.
-3. Wait for preparation to finish, choose a workflow, enter a prompt and queue an image.
+3. Wait for preparation to finish, choose **SFT Fast**, enter a prompt and click **Run**.
 
-No separate password, terminal command, model-download token or storage edit is needed for first use. The startup page shows the current phase, downloaded GB and percentage while **23.51 GB** of public model files download and verify. Startup depends on the host and network. One fresh Pod became ready in about **7 min 33 s**; another was confirmed ready by **18 min 55 s** after creation. These are two observations, not a timing guarantee. Later starts can reuse retained models.
+No separate password, terminal command, model-download token or storage edit is needed for first use. The startup page shows the current phase, downloaded GB and percentage while **23.51 GB** of public model files download and verify. The fresh 0.1.2 Pod was confirmed ready **18 min 39 s** after the deployment response; allocation time before that response is additional. Startup depends on the host and network. Later starts can reuse retained models.
 
 ## Choose a workflow
 
@@ -19,7 +19,7 @@ No separate password, terminal command, model-download token or storage edit is 
 | Image variation — experimental | Approximately 1 MP, input aspect ratio, denoise 0.6 | Ordinary latent repainting |
 | Official SFT — prompt enhancement | Official graph with its prompt enhancer | Expanded prompts in the browser |
 
-The workflows share the Qwen3.5-9B W4A8 GPTQ text encoder. Photography and fast include two model-only LoRA slots: bundled SFT Destripe at **1.5**, then an optional compatible SFT adapter initially disabled. The default API approves only the bundled Destripe adapter; installing another adapter also requires adding it to the approved catalog.
+The workflows share the Qwen3.5-9B W4A8 GPTQ text encoder. Photography and fast include two model-only LoRA slots: bundled SFT Destripe at **1.5**, then an optional compatible SFT adapter initially disabled. The API approves only the bundled Destripe adapter by default; using another adapter through the API also requires adding it to the approved catalog.
 
 These are starting settings, with no claim of universal image-quality superiority. Img2img is experimental latent repainting, not an instruction-edit-trained model. The official prompt-enhanced workflow is browser-only.
 
@@ -67,13 +67,13 @@ Poll `/status/JOB_ID` on that endpoint for the returned job ID. A completed job 
 
 API img2img center-crops/resizes to the requested dimensions, defaulting to 1024×1024, with denoise 0.6. It has no exposed LoRA slot. Input images are limited to 7 MiB decoded, 16 megapixels and 8192 pixels per side; the complete encoded request must also fit [Runpod's payload limit](https://docs.runpod.io/serverless/workers/handler-functions#payload-limits).
 
-A cold API worker downloads the same model files. Two validated cold requests had **326 and 336 seconds of queue delay** before execution. Replacement workers can download them again; these observations are not a startup guarantee. Use asynchronous `/run` for long requests. Generation has a 600-second worker timeout after preparation; the Hub cold test allows 1,200,000 ms.
+A cold API worker downloads the same model files. The fresh 0.1.2 test had **206.571 seconds of queue delay** before its first execution; later generation tests queued in 139–158 ms. Replacement workers can download the models again; these observations are not a startup guarantee. Use asynchronous `/run` for long requests. Generation has a 600-second worker timeout after preparation; the Hub cold test allows 1,200,000 ms.
 
 ## Add LoRAs
 
-Put compatible MOSS-Image SFT adapters in **`/workspace/ComfyUI/models/loras/`**, then refresh ComfyUI's model list and choose the file in a LoRA loader. The folder name is `loras` (plural). The installed application's `/opt/comfyui/models` points to the same persistent model tree, so uploads there are visible too.
+Put compatible MOSS-Image SFT adapters in **`/workspace/ComfyUI/models/loras/`**, then refresh ComfyUI's model list or reload the editor, choose the adapter in the second LoRA slot and set a nonzero strength. The folder name is `loras` (plural). The installed application's `/opt/comfyui/models` points to the same workspace model tree, so uploads there are visible too.
 
-Version 0.1.2 moves the earlier `/workspace/moss` workspace to `/workspace/ComfyUI` without downloading the models again. Existing files are preserved; conflicting destinations stop migration without replacement. This layout update is being validated before publication.
+Version 0.1.2 moves a recognized earlier `/workspace/moss` workspace to `/workspace/ComfyUI` when the destination is absent, retaining the models and existing files. The actual upgrade preserved the uploaded adapter, and the browser model list sees it. Conflicting destinations stop migration without replacement.
 
 ## Keep models and images
 
@@ -108,6 +108,6 @@ docs/                         Release procedure and dated validation evidence
 
 ComfyUI is exposed through the authenticated **8888** gateway; Runpod SSH uses port 22. The internal ComfyUI service remains private. Standard Runpod origins are derived automatically.
 
-The tested `0.1.1` image, exact runtime revision and completed checks are recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). The public Pod template uses this tested image. The [release procedure](docs/release.md) separates image/template publication from Runpod Hub approval.
+The tested `0.1.2` image passed fresh GPU presets, all four native workflow imports, prompt enhancement, browser Run-button generation, queue API checks and restart preservation. Exact evidence is recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). Publication of the corrected image/template and GitHub release remains pending. The [release procedure](docs/release.md) separates publication from Runpod Hub approval.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI and upstream workflows retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

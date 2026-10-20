@@ -1,8 +1,9 @@
 {
   "schema_version": 1,
-  "source_revision": "0bf51872c7b9350a40f96cd8295d318bcef8b181",
-  "image_digest": "sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1",
-  "validated_at": "2026-10-20T11:37:59.540658+00:00",
+  "package_version": "0.1.2",
+  "source_revision": "a14d011be32b86447a06c88531f0c334b9b86f08",
+  "image_digest": "sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671",
+  "validated_at": "2026-10-20T12:51:31.525322+00:00",
   "gpu": {
     "name": "NVIDIA GeForce RTX 4090",
     "vram_gb": 25.253,
@@ -13,20 +14,18 @@
     "torch_version": "2.13.0+cu130"
   },
   "source_checks": {
-    "tests_passed": 79,
-    "source_ci_run": 39409238117,
-    "container_ci_run": 39409237490,
+    "tests_passed": 89,
+    "source_ci_run": 39419579086,
+    "container_ci_run": 39419580317,
     "in_image_package_gate": true,
     "in_image_native_templates_gate": true,
     "native_elf_files_checked": 409,
     "inactive_amd_hip_files_reported_separately": 1,
     "actual_gpu_host_driver_gate": true,
-    "anonymous_image_pull_verified": true
+    "anonymous_image_identity_verified": true
   },
   "image_transfer": {
-    "compressed_bytes": 3747665350,
-    "previous_0_1_0_compressed_bytes": 10465719607,
-    "reduction_percent": 64.191,
+    "compressed_bytes": 3747670541,
     "model_bytes_downloaded_on_cold_cache": 23509579072
   },
   "pod": {
@@ -36,7 +35,21 @@
     "auth_verified": true,
     "native_generated_connect_token": true,
     "manual_password_required": false,
-    "image_identity_verified_via": "immutable control-plane image reference and baked-source checks",
+    "image_identity_verified_via": "immutable control-plane image reference, source hashes and running package version",
+    "layout": {
+      "canonical_workspace_is_real_directory": true,
+      "legacy_workspace_absent": true,
+      "canonical_models_is_real_directory": true,
+      "baked_models_is_symlink": true,
+      "baked_models_targets_canonical": true,
+      "application_matches_checked_out_source": true,
+      "paths": {
+        "workspace": "/workspace/ComfyUI",
+        "models": "/workspace/ComfyUI/models",
+        "loras": "/workspace/ComfyUI/models/loras",
+        "baked_models_alias": "/opt/comfyui/models"
+      }
+    },
     "jobs": [
       {
         "preset": "fast",
@@ -46,8 +59,10 @@
         "height": 768,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "454414640826f895e31c9717abf478f5c45a363d5482ccb178d61bcd6ec4bc60",
-        "client_elapsed_seconds": 28.696
+        "image_sha256": "0295d0dab6a9a31a424c9e5922e788dedabcd7d4660af711e7c4493f7c0ea669",
+        "client_elapsed_seconds": 20.026,
+        "image_bytes": 875266,
+        "image_format": "PNG"
       },
       {
         "preset": "photography",
@@ -57,8 +72,10 @@
         "height": 1664,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "54559ce25d9ce687a31e8950c9da341c35c3771619d7ad315b93dc2c18f32492",
-        "client_elapsed_seconds": 54.612
+        "image_sha256": "f8083bbc5d227de992cd2bfcf5ea33f8ea0e5bf962524ec0cd7e2e50de528c57",
+        "client_elapsed_seconds": 50.437,
+        "image_bytes": 2452142,
+        "image_format": "PNG"
       },
       {
         "preset": "img2img",
@@ -68,17 +85,35 @@
         "height": 1024,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "5e8e4b955166ac696b7f30e07057fd6d4dd50d7c83c14716e140889b5d131c03",
-        "client_elapsed_seconds": 20.582
+        "image_sha256": "ee69ea0a30872d76b9dc402cc98c607ba4ee522804e5838e207d11c929727834",
+        "client_elapsed_seconds": 18.148,
+        "image_bytes": 1408975,
+        "image_format": "PNG"
       }
     ],
+    "own_returned_images_verified_and_viewed": true,
+    "cold_start": {
+      "timing_basis": "seconds from deployment API response; API request/allocation latency is excluded",
+      "first_gateway_observed_seconds": 190.123,
+      "first_ready_observed_seconds": 1119.013,
+      "model_download_bytes": 23509579072,
+      "native_login_and_visible_preparation_progress": true,
+      "initial_browser_preparation_wait_seconds": 600,
+      "initial_browser_wait_outcome": "Timed out waiting for candidate model preparation",
+      "followup_ready_browser_status": "passed",
+      "notes": "One fresh persistent-volume host; observations are timing bounds, not a general startup-time guarantee."
+    },
     "restart_preserved": true,
     "restart_evidence": {
-      "container_process_start_confirmed": true,
+      "new_container_process": true,
       "unchanged_file_sha256_count": 8,
       "unchanged_model_inode_size_mtime_count": 6,
       "unchanged_application_sha256_count": 2,
-      "provider_http_500_reconciled_by_actual_process_and_files": true
+      "provider_request_http_status": 500,
+      "restart_request_count": 1,
+      "request_to_ready_observation_seconds": 63.674,
+      "provider_response_reconciled_with_process_change": true,
+      "notes": "Provider returned HTTP500; no retry was sent. New process, retained files, and recovered readiness independently confirmed the restart."
     },
     "browser": {
       "fresh_profile": true,
@@ -126,18 +161,11 @@
         "javascript_cookie_hidden": true
       },
       "transport": {
-        "unauthenticated_http": 401,
-        "unauthenticated_websocket": 401,
-        "invalid_token": 401,
-        "native_readiness": 200,
-        "authenticated_public_origin_post": 405,
-        "foreign_origin_post": 403,
-        "authenticated_public_origin_websocket": 101,
-        "foreign_origin_websocket": 403,
-        "status": "passed",
-        "agent_owned_session": true,
-        "native_readiness_sets_no_cookie": true,
-        "no_generation_submitted": true
+        "post_status": 405,
+        "post_public_origin": true,
+        "websocket_status": 101,
+        "websocket_public_origin": true,
+        "websocket_initial_status": true
       },
       "prompt_enhanced": {
         "completed": true,
@@ -150,84 +178,90 @@
         "height": 1024,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "9cb839ce3be4e3dc3ec543c439822d757563a62b02130fd954540a57e79c3a73"
+        "image_sha256": "082b75c3601eeee24632ce140e321df10e27c0e546d12728aad02c0be683840d",
+        "public_origin_post_status": 200
       },
       "post_restart_all_four_workflows_verified": true,
-      "post_restart_transport_verified": true
-    },
-    "no_volume_first_use": {
-      "schema_version": 1,
-      "validated_at": "2026-10-20T11:20:59.702558+00:00",
-      "source_revision": "0bf51872c7b9350a40f96cd8295d318bcef8b181",
-      "image_digest": "sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1",
-      "hardware": {
-        "python": "3.11.17",
-        "torch": "2.13.0+cu130",
-        "cuda_runtime": "13.0",
-        "cuda_available": true,
-        "gpu": "NVIDIA GeForce RTX 4090",
-        "vram_bytes": 25252724736,
-        "nvidia_smi": "NVIDIA GeForce RTX 4090, 595.91.07, 24564",
-        "gateway_sha256": "42ea2e25c47e86f6f2db7975e02839e7a3986dbd6d8927723b07d2535ceae503"
-      },
-      "launch": {
-        "fresh_container": true,
-        "volume_gb": 0,
-        "container_disk_gb": 60,
-        "native_generated_token_present": true,
-        "manual_moss_password_required": false,
-        "storage_edit_required": false,
-        "hourly_rate_usd": 0.89,
-        "first_observed_gateway_seconds": 220.1,
-        "first_observed_ready_seconds": 452.7,
-        "timing_is_observation_upper_bound_on_one_host": true,
-        "model_bytes": 23509579072
-      },
-      "browser": {
-        "fresh_profile": true,
-        "cross_site_native_connect": true,
+      "post_restart_authentication": {
         "unauthenticated_status": 401,
-        "clean_url_after_native_connect": true,
-        "secure_httponly_strict_session": true,
-        "early_visible_preparation": true,
-        "native_workflows": [
-          {
-            "preset": "photography",
-            "native_import": true,
-            "root_nodes": 12,
-            "subgraphs": 0,
-            "rendered": true
-          },
-          {
-            "preset": "fast",
-            "native_import": true,
-            "root_nodes": 12,
-            "subgraphs": 0,
-            "rendered": true
-          },
-          {
-            "preset": "img2img",
-            "native_import": true,
-            "root_nodes": 12,
-            "subgraphs": 0,
-            "rendered": true
-          },
-          {
-            "preset": "enhanced",
-            "native_import": true,
-            "root_nodes": 5,
-            "subgraphs": 1,
-            "rendered": true
-          }
-        ],
-        "transport": {
-          "post_status": 405,
-          "post_public_origin": true,
-          "websocket_status": 101,
-          "websocket_public_origin": true,
-          "websocket_initial_status": true
-        }
+        "cross_site_connect": true,
+        "clean_url": true,
+        "cookie": {
+          "name": "__Host-moss-session",
+          "secure": true,
+          "httpOnly": true,
+          "sameSite": "Strict",
+          "path": "/"
+        },
+        "javascript_cookie_hidden": true
       },
+      "post_restart_transport": {
+        "post_status": 405,
+        "post_public_origin": true,
+        "websocket_status": 101,
+        "websocket_public_origin": true,
+        "websocket_initial_status": true
+      }
+    },
+    "canonical_lora_chooser": {
+      "canonical_task_hardlink_created": true,
+      "baked_models_alias_sees_same_file": true,
+      "canonical_task_hardlink_visible_in_native_catalog": true,
+      "status": "passed",
+      "task_alias_removed": true,
+      "bundled_source_retained": true
+    },
+    "disposable_test_cleanup": {
+      "pod_removed": true,
+      "template_removed": true,
+      "v1_and_v2_http404_verified": true,
+      "initial_v1_delete_http500_reconciled_before_documented_v2_cleanup": true,
+      "v2_pod_delete_http_status": 204,
+      "v2_template_delete_http_status": 204,
+      "other_resources_mutated": false,
+      "final_user_pod_outside_cleanup_scope": true,
+      "private_validation_proofs_retained": true
+    }
+  },
+  "existing_volume_upgrade": {
+    "old_managed_root_absent": true,
+    "canonical_root_is_real_directory": true,
+    "installed_models_alias_matches": true,
+    "owned_files_preserved": true,
+    "unchanged_owned_file_count": 8,
+    "bundled_models_preserved": true,
+    "unchanged_model_inode_size_mtime_count": 6,
+    "uploaded_adapter_preserved": true,
+    "uploaded_adapter_visible_in_native_chooser": true,
+    "uploaded_adapter_executed": false,
+    "container_model_import_integrity_verified": true,
+    "original_container_model_files_retained_during_upgrade": true,
+    "task_only_filesystem_checks": {
+      "persistent_filesystem_atomic_rename_passed": true,
+      "model_inode_preserved": true,
+      "container_to_volume_model_import_passed": true,
+      "cross_device_copy_actually_exercised": true,
+      "baked_models_alias_verified": true,
+      "task_owned_fixtures_only": true
+    },
+    "public_transport": {
+      "unauthenticated_http": 401,
+      "unauthenticated_websocket": 401,
+      "invalid_token": 401,
+      "native_readiness": 200,
+      "authenticated_public_origin_post": 405,
+      "foreign_origin_post": 403,
+      "authenticated_public_origin_websocket": 101,
+      "foreign_origin_websocket": 403,
+      "status": "passed",
+      "agent_owned_session": true,
+      "native_readiness_sets_no_cookie": true,
+      "no_generation_submitted": true
+    },
+    "actual_browser_use": {
+      "four_native_workflows_verified": true,
+      "new_generation_jobs_submitted": 1,
+      "queue_count_immediately_before_run": 0,
       "real_user_actions": {
         "native_connect_mouse_click": true,
         "landing_card_mouse_click": true,
@@ -241,62 +275,27 @@
         "no_direct_prompt_fetch": true,
         "no_history_or_queue_reads": true
       },
-      "fresh_first_ui_render": {
-        "new_matching_output_observed": true,
-        "embedded_graph_semantically_matches_typed_graph": true,
-        "width": 1024,
-        "height": 1024,
-        "image_sha256": "d85cf0efe5f90b79fc129728c057896b3c38ea51592aa95fe5552c58a890c23c",
-        "observation_limit": "Initial observer omitted the frontend API alias; the first fresh output was recovered and its embedded graph verified."
-      },
-      "corrected_ui_capture": {
-        "exact_frontend_post_route": "/api/prompt",
-        "post_status": 200,
-        "public_origin_verified": true,
-        "frontend_websocket_route": "/ws",
-        "matching_returned_prompt_only": true,
-        "terminal_success": true,
-        "ui_post_count": 1,
-        "returned_image_sha256": "d85cf0efe5f90b79fc129728c057896b3c38ea51592aa95fe5552c58a890c23c",
-        "width": 1024,
-        "height": 1024,
-        "seed": 42,
-        "steps": 25,
-        "cfg": 2.5,
-        "cached_node_count": 11,
-        "retry_is_not_claimed_as_a_second_uncached_render": true
-      },
-      "visual_review": {
-        "own_png_viewed": true,
-        "actual_native_result_panel_screenshot_viewed": true
-      },
-      "intermediate_test_pod_cleanup": {
-        "terminated": true,
-        "confirmed_http_404": true
-      }
-    },
-    "cold_start_observations": {
-      "no_volume_ready_upper_seconds": 452.7,
-      "persistent_pod_ready_upper_seconds": 1134.8,
-      "observations_are_not_timing_guarantees": true
-    },
-    "lora": {
-      "model": "moss_image_sft_int8_convrot.safetensors",
-      "adapter": "moss_sft_destripe_top64_bf16.safetensors",
-      "strength": 1.5,
-      "before_patch_keys": 0,
-      "after_patch_keys": 24,
-      "adapter_sha256": "fcd0d025f6a62dfe3171ab11fe9b3119eac735e22b94913c4efe45d8c69c2da9",
-      "patch_match_verified": true,
-      "check_device": "cpu",
-      "gpu_inference_verified_separately": true
+      "sampler_executed": true,
+      "width": 1024,
+      "height": 1024,
+      "seed": 42,
+      "steps": 25,
+      "cfg": 2.5,
+      "image_sha256": "d85cf0efe5f90b79fc129728c057896b3c38ea51592aa95fe5552c58a890c23c",
+      "own_returned_image_verified_and_viewed": true,
+      "initial_ui_attempt_stopped_before_run_when_idle_unconfirmed": true
     }
   },
   "serverless": {
     "fresh_worker": true,
     "configured_gpu": "NVIDIA GeForce RTX 4090",
+    "observed_gpu_types": [
+      "NVIDIA GeForce RTX 4090"
+    ],
     "sdk_version": "1.12.0",
-    "image_identity_verified_via": "endpoint control-plane reference and own worker metadata",
+    "package_version": "0.1.2",
+    "image_identity_verified_via": "endpoint control-plane reference and own worker image metadata",
+    "actual_worker_image_matches": true,
     "container_disk_gb": 60,
     "persistent_volume": false,
     "jobs": [
@@ -309,8 +308,11 @@
         "steps": 25,
         "cfg": 2.5,
         "image_sha256": "b305fccc0898a1c969251e38c496fd60bee783e091182590526ba7d56ebfc3aa",
-        "client_elapsed_seconds": 357.268,
-        "execution_ms": 16723
+        "client_elapsed_seconds": 228.494,
+        "image_bytes": 708096,
+        "image_format": "PNG",
+        "queue_delay_ms": 206571,
+        "execution_ms": 15543
       },
       {
         "preset": "photography",
@@ -321,8 +323,11 @@
         "steps": 25,
         "cfg": 2.5,
         "image_sha256": "e6bdfab50746c448db217f951f34cf18a7bbe8572ff6e2016f8f9fd8a0d96f9f",
-        "client_elapsed_seconds": 58.919,
-        "execution_ms": 46991
+        "client_elapsed_seconds": 50.701,
+        "image_bytes": 2449829,
+        "image_format": "PNG",
+        "queue_delay_ms": 143,
+        "execution_ms": 47656
       },
       {
         "preset": "img2img",
@@ -333,8 +338,11 @@
         "steps": 25,
         "cfg": 2.5,
         "image_sha256": "da8270c7e9b9bac185342231de58ecbfd6ab8fa1253e8e3d2879611e3f5ca0a0",
-        "client_elapsed_seconds": 49.267,
-        "execution_ms": 14914
+        "client_elapsed_seconds": 19.552,
+        "image_bytes": 1073079,
+        "image_format": "PNG",
+        "queue_delay_ms": 158,
+        "execution_ms": 14322
       }
     ],
     "invalid_empty_prompt_rejected": true,
@@ -347,48 +355,51 @@
       "steps": 25,
       "cfg": 2.5,
       "image_sha256": "4da7e8fc12929597ea05b48e0c2ea8ac78ea6707b160f4fe429fa8992788c6c6",
-      "client_elapsed_seconds": 360.765,
+      "client_elapsed_seconds": 12.864,
+      "image_bytes": 716687,
+      "image_format": "PNG",
+      "queue_delay_ms": 139,
+      "execution_ms": 5321,
       "adapter": {
         "name": "moss_sft_destripe_top64_bf16.safetensors",
         "strength": 0.25,
         "slot": "second"
-      },
-      "execution_ms": 13050
+      }
     },
     "cold_job_delay_ms": [
-      326179,
-      336267
+      206571
     ],
     "workers_min": 0,
     "workers_max": 1,
     "idle_timeout_seconds": 30,
-    "disposable_endpoint_and_template_removed": true
+    "images_verified_and_viewed": 4,
+    "disposable_endpoint_and_template_removed": true,
+    "existing_api_resources_unchanged": true
+  },
+  "no_volume_default_layout_check": {
+    "status": "passed",
+    "scope": "CPU-only ephemeral Docker image overlay; no persistent mount, GPU, service startup or model download",
+    "image_digest": "sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671",
+    "ci_run": 39424748372,
+    "workflow_revision": "d31f452c17b112f39ff3ea9d190360b793ab7253",
+    "workflow": ".github/workflows/layout.yml",
+    "baked_nonplaceholder_file_hashes_preserved": true,
+    "canonical_models_real_and_installed_alias_matches": true,
+    "opaque_task_lora_fixture_visible_through_both_paths": true,
+    "helper_idempotence_verified": true,
+    "actual_no_volume_gpu_pod_tested": false
+  },
+  "publication_checks": {
+    "status": "pending_recorded_verification",
+    "hub_submission": "held"
   },
   "limits": [
-    "Execution, browser interaction, response integrity and persistence were checked; aesthetic quality was not benchmarked.",
-    "Cold initialization depends on host registry and model-download connectivity. One host hit an image-configuration TLS timeout and was retired before startup.",
-    "The corrected repeated UI capture reused 11 cached nodes; the earlier fresh UI render and separate fresh GPU/API jobs establish inference.",
-    "API worker metadata does not independently establish its exact NVIDIA driver version.",
-    "Shared-network-cache concurrency and Hub approval are separate checks; Hub review is external."
-  ],
-  "publication_checks": {
-    "public_template": {
-      "immutable_image_matches": true,
-      "native_connection_enabled": true,
-      "explicit_start_command_verified": true,
-      "readme_verified": true,
-      "anonymous_metadata_http_status": 200,
-      "fresh_browser_selected_template_rendered": true,
-      "authenticated_console_launch_tested": false,
-      "scope": "Public deploy screen and selected metadata checked behind Runpod sign-in; equivalent task-owned GPU launches and ComfyUI browser use tested separately."
-    },
-    "stable_image": {
-      "version": "0.1.1",
-      "same_manifest_digest": true,
-      "anonymous_verification_passed": true,
-      "promotion_workflow_run": 39417149680,
-      "rebuild_performed": false
-    }
-  },
-  "package_version": "0.1.1"
+    "All execution, browser and migration evidence was collected for 0.1.2; historical 0.1.0/0.1.1 evidence was not reused.",
+    "The initial fresh-Pod browser preparation wait timed out after 600 seconds; follow-up observation established readiness at 1119.013 seconds from the deployment API response, excluding request/allocation latency.",
+    "Cold-start and execution timings are observations rather than guarantees; host placement, registry transfer and model downloads vary.",
+    "The no-volume check covers CPU image-overlay path migration only; no fresh no-volume GPU Pod was validated for 0.1.2.",
+    "Uploaded adapter preservation and chooser visibility do not establish its compatibility or inference quality; it was not executed.",
+    "API worker metadata does not independently establish the exact NVIDIA driver version; shared-network-cache concurrency remains untested.",
+    "Image-quality superiority was not benchmarked. Public publication verification and external Hub review are separate steps."
+  ]
 }
