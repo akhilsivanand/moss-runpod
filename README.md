@@ -25,7 +25,7 @@ These are starting settings, with no claim of universal image-quality superiorit
 
 ## Use the queue API
 
-The [Runpod Hub listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is a **Serverless queue API**. The 0.1.2 Hub build failed before tests; it is not yet listed or approved. See [validation status](docs/validation-status.md). Deploy an available listing to create your own endpoint; the worker does not expose the browser editor. Use the Pod link above for ComfyUI.
+The [Runpod Hub listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) targets a **Serverless queue API**. Its 0.1.2 build is blocked by a GitHub source-download HTTP 401 and has not reached automated tests or manual approval. Hub deployment is unavailable while this is being investigated; see [validation status](docs/validation-status.md). Use the Pod link above for ComfyUI.
 
 Submit this small first test to `https://api.runpod.ai/v2/ENDPOINT_ID/run`, with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`:
 
