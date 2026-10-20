@@ -33,3 +33,7 @@ Users who want models and images retained after stopping or replacing a Pod must
 The browser test verifies the application protocol; it does not establish that a deployed Runpod Connect button supplies the expected token. Verify that separately on a fresh task-owned Pod. Observe only its new test jobs and outputs, never user logs or history. Leave the user's stopped Pod untouched.
 
 [`validation.json`](validation.json) remains the historical `0.1.0` report. It must not be reused as proof for this candidate. Publication requires evidence for the exact new source and immutable image digest.
+
+## Host availability
+
+The runtime retains its pinned CUDA 13.0 user libraries. Deployment filters also allow CUDA 13.2-capable hosts, which Runpod currently reports in stock. NVIDIA documents driver backward compatibility for applications built against older CUDA versions. The actual candidate driver and generation checks still have to pass. See [NVIDIA compatibility](https://docs.nvidia.com/cuda/archive/13.0.1/cuda-toolkit-release-notes/index.html) and [Runpod CUDA filters](https://docs.runpod.io/sdks/graphql/manage-pods#filter-by-cuda-version).

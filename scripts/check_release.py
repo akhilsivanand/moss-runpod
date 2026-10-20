@@ -180,7 +180,7 @@ def check_deployment(root):
     require(hub.get("type") == "serverless" and hub.get("category") == "image", "Hub must describe an image Serverless API")
     config = hub.get("config", {})
     require(config.get("runsOn") == "GPU" and config.get("gpuCount") == 1 and config.get("gpuIds") == "ADA_24"
-            and config.get("containerDiskInGb") == 60 and config.get("allowedCudaVersions") == ["13.0"], "Hub hardware settings are inconsistent")
+            and config.get("containerDiskInGb") == 60 and config.get("allowedCudaVersions") == ["13.0", "13.2"], "Hub hardware settings are inconsistent")
     require("endpointType" not in config, "This release is queue-based, not load-balanced")
     require(any(e.get("key") == "MOSS_MODE" and e.get("value") == "serverless" for e in config.get("env", [])), "Hub must select Serverless mode")
     tests = read_json(root / ".runpod/tests.json")
@@ -189,7 +189,7 @@ def check_deployment(root):
         require(isinstance(case.get("name"), str) and isinstance(case.get("input"), dict), "Invalid Hub test case")
         require(case["input"].get("preset") in PRESETS and bool(case["input"].get("prompt", "").strip()), "Hub test must submit a real preset prompt")
         require(type(case.get("timeout")) is int and case["timeout"] >= 600000, "Hub cold-test timeout is too short")
-    require(tests.get("config", {}).get("gpuCount") == 1 and tests["config"].get("allowedCudaVersions") == ["13.0"], "Hub test hardware settings are inconsistent")
+    require(tests.get("config", {}).get("gpuCount") == 1 and tests["config"].get("allowedCudaVersions") == ["13.0", "13.2"], "Hub test hardware settings are inconsistent")
     pod = read_json(root / "deploy/pod-template.json")
     require(pod.get("category") == "NVIDIA" and pod.get("isServerless") is False, "Pod template must select NVIDIA Pod mode")
     require(pod.get("containerDiskInGb") == 60 and pod.get("volumeInGb") == 60 and pod.get("volumeMountPath") == "/workspace", "Pod needs 60 GB first-use disk and the optional workspace volume setting")
@@ -201,7 +201,7 @@ def check_deployment(root):
     console = read_json(root / "deploy/pod-console.json")
     require(console.get("startJupyter") is True and console.get("startSsh") is True,
             "Native Connect token and Runpod SSH must be enabled")
-    require(console.get("allowedCudaVersions") == ["13.0"], "Pod host must support CUDA 13.0")
+    require(console.get("allowedCudaVersions") == ["13.0", "13.2"], "Pod host must support CUDA 13.0")
     require(console.get("portsConfig") == [{"name": "MOSS ComfyUI", "port": 8888}],
             "Native Connect must label port 8888 as MOSS ComfyUI")
     return pod

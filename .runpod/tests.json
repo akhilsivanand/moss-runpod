@@ -23,6 +23,6 @@
         "value": "serverless"
       }
     ],
-    "allowedCudaVersions": ["13.0"]
+    "allowedCudaVersions": ["13.0", "13.2"]
   }
 }

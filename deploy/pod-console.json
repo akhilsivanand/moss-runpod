@@ -2,7 +2,8 @@
   "startJupyter": true,
   "startSsh": true,
   "allowedCudaVersions": [
-    "13.0"
+    "13.0",
+    "13.2"
   ],
   "portsConfig": [
     {

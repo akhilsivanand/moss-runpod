@@ -8,7 +8,7 @@
     "containerDiskInGb": 60,
     "gpuCount": 1,
     "gpuIds": "ADA_24",
-    "allowedCudaVersions": ["13.0"],
+    "allowedCudaVersions": ["13.0", "13.2"],
     "env": [
       {
         "key": "MOSS_MODE",
