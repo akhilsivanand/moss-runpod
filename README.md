@@ -1,52 +1,33 @@
 # MOSS-Image on Runpod
 
-> **0.1.1 candidate:** a simpler **Deploy → Connect → choose a workflow** flow is under validation. The public `0.1.0` template remains unchanged. See [candidate status](docs/simple-launch.md).
+**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Generate images in the browser or use the separate Runpod Hub queue API. Both use the same image and pinned MOSS-Image SFT models.
 
-MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
+## Open ComfyUI
 
-**Release status — 2026-10-19:** image `0.1.0` is available. Pod and queue generation, browser workflows, and restart preservation pass; source CI passes 71 tests. The ComfyUI Pod template and [GitHub release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.0) are public. [Hub submission](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is accepted; Runpod build/tests and manual approval are pending. See [validation details](docs/validation-status.md).
+1. [Deploy the MOSS ComfyUI Pod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) with one supported NVIDIA GPU with at least 24 GB VRAM.
+2. Open **Connect → MOSS ComfyUI**. Runpod signs you in through its connection link.
+3. Wait for preparation to finish, choose a workflow, enter a prompt and queue an image.
 
-## Open the ComfyUI browser UI
-
-The **0.1.1 candidate** reduces launch to three steps:
-
-1. Deploy a Pod with one CUDA 13.0-compatible NVIDIA GPU with at least 24 GB VRAM.
-2. Open **Connect → MOSS ComfyUI**. Runpod supplies its connection token automatically.
-3. Wait for the preparation page to finish, then choose a workflow and enter a prompt.
-
-The candidate requests a 60 GB container disk. No separate MOSS password, model-download token, terminal command, or storage edit is needed for first use. The preparation page shows phases, downloaded GB and percentage while the six pinned model files download and verify. Initial preparation transfers **23.51 GB**, so time depends on the selected host and download connection.
-
-For models and images you want to keep after stopping or replacing the Pod, choose persistent storage mounted at `/workspace` in Runpod Storage. The current Runpod launch screen selects storage separately; the template's legacy volume setting alone does not guarantee a persistent attachment. Restarts reuse verified models when the data is retained.
-
-The startup script is included in the image: [`scripts/entrypoint.sh`](scripts/entrypoint.sh), installed as **`/opt/moss/scripts/entrypoint.sh`**. The template explicitly selects that command and preserves the image's `tini` entry point. It initializes Runpod SSH and starts the supervised model preparation, connection page and ComfyUI services. The candidate makes the command explicit in the template's start-command field.
-
-The candidate uses HTTP port **8888** for **MOSS ComfyUI** and port 22 for Runpod SSH. Its [Pod template](deploy/pod-template.json) and [console connection settings](deploy/pod-console.json) are a pair: the console must enable Runpod's native token-bearing Connect link. The internal ComfyUI service stays private.
-
-The public [0.1.0 template](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) still uses the earlier password-based setup on port 8188. It has not been replaced by this candidate. See [candidate validation and remaining gates](docs/simple-launch.md).
-
-For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com`, including a nondefault port if needed and no path.
+No separate password, terminal command, model-download token or storage edit is needed for first use. The startup page shows the current phase, downloaded GB and percentage while **23.51 GB** of public model files download and verify. Startup depends on the host and network. One fresh Pod became ready in about **7 min 33 s**; another was confirmed ready by **18 min 55 s** after creation. These are two observations, not a timing guarantee. Later starts can reuse retained models.
 
 ## Choose a workflow
 
-| Preset | Model and VAE | Default generation settings | Purpose |
-|---|---|---|---|
-| `photography` | SFT BF16, full FLUX.2 VAE | 1216×1664, 25 steps, `er_sde` / `simple`, CFG 2.5 | Photography starting point |
-| `fast` | SFT INT8 ConvRot, small FLUX.2 VAE | 1024×1024, 25 steps, `er_sde` / `simple`, CFG 2.5 | Smaller diffusion checkpoint |
-| `img2img` | SFT INT8 ConvRot, small FLUX.2 VAE | Approximately 1 MP preserving input aspect ratio, 25 steps, CFG 2.5, denoise 0.6 | Experimental latent repainting |
+| Browser workflow | Starting settings | Use |
+|---|---|---|
+| SFT Photography — BF16 | 1216×1664, 25 steps, CFG 2.5, full FLUX.2 VAE | Direct photographic prompts |
+| SFT Fast — INT8 + LoRAs | 1024×1024, 25 steps, CFG 2.5, small FLUX.2 VAE | Smaller diffusion checkpoint |
+| Image variation — experimental | Approximately 1 MP, input aspect ratio, denoise 0.6 | Ordinary latent repainting |
+| Official SFT — prompt enhancement | Official graph with its prompt enhancer | Expanded prompts in the browser |
 
-All presets share the Qwen3.5-9B W4A8 GPTQ text encoder. The photography graph has two model-only LoRA slots: SFT Destripe at **1.5**, then an optional compatible SFT adapter at **0**. Use only adapters that support this model and loading path. The [Destripe author](https://huggingface.co/nynxz/MOSS-Image) tested strength 1.5 at 1024; the approximately 2 MP photography size is an adaptation, not a validated strength-scaling rule.
+The workflows share the Qwen3.5-9B W4A8 GPTQ text encoder. Photography and fast include two model-only LoRA slots: bundled SFT Destripe at **1.5**, then an optional compatible SFT adapter initially disabled. The default API approves only the bundled Destripe adapter; installing another adapter also requires adding it to the approved catalog.
 
-The browser collection also includes the official prompt-enhanced graph. It is a UI-only workflow; the queue API accepts the three presets above.
+These are starting settings, with no claim of universal image-quality superiority. Img2img is experimental latent repainting, not an instruction-edit-trained model. The official prompt-enhanced workflow is browser-only.
 
-These settings are starting points. Prompt, seed, subject, and adapters affect the result; this package makes no quality-superiority or generation-speed claim. Latent img2img is not an instruction-edit-trained model.
+## Use the queue API
 
-## Use the Hub API
+The [Runpod Hub listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) is a **Serverless queue API**. Its availability depends on Runpod's build, tests and review. Deploy an available listing to create your own endpoint; the worker does not expose the browser editor. Use the Pod link above for ComfyUI.
 
-The Hub package is a **queue-based Serverless API**, with `MOSS_MODE=serverless`; Hub submission is accepted and approval is pending. Once the listing is approved, deploy it to create your own endpoint. The worker does not expose the browser UI.
-
-A worker downloads the same six files on first boot. One cold API job reported about **7 minutes of delay before execution**; this is one worker observation, and startup time varies with downloads and the host. Ephemeral workers may repeat the downloads after replacement. To retain models on a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers share that verified model cache while keeping their databases and job files in separate temporary workspaces.
-
-Submit a job with a nonempty `prompt` and `preset` set to `photography`, `fast`, or `img2img`. For a small first test:
+Submit this small first test to `https://api.runpod.ai/v2/ENDPOINT_ID/run`, with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`:
 
 ```json
 {
@@ -62,66 +43,65 @@ Submit a job with a nonempty `prompt` and `preset` set to `photography`, `fast`,
 }
 ```
 
-Send this payload to `https://api.runpod.ai/v2/ENDPOINT_ID/run` with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`, then poll `https://api.runpod.ai/v2/ENDPOINT_ID/status/JOB_ID` for that job. Replace the placeholders with your own endpoint, job, and key. The per-job execution limit is 600 seconds; cold worker preparation is separate. The Hub build test allows 1,200,000 milliseconds for its cold test. Use `/run` for jobs that can outlast a synchronous request.
-
-The completed Runpod result contains this `output` structure:
+Poll `/status/JOB_ID` on that endpoint for the returned job ID. A completed job contains:
 
 ```json
 {
-  "images": [{"type": "base64", "data": "BASE64_PNG_BYTES"}],
-  "seed": 42,
-  "preset": "fast"
+  "output": {
+    "images": [{"type": "base64", "data": "BASE64_PNG_BYTES"}],
+    "seed": 42,
+    "preset": "fast"
+  }
 }
 ```
 
 | Input | Accepted values |
 |---|---|
-| `prompt` | Required, nonempty text, at most 12,000 characters |
-| `preset` | `photography` (default), `fast`, or `img2img` |
-| `seed` | Integer from 0 to 2⁶³−1; omitted means a random seed |
-| `width`, `height` | Multiples of 64, at least 64 per side, at most 2,097,152 pixels in total |
+| `prompt` | Required, nonempty text; at most 12,000 characters |
+| `preset` | `photography` (default), `fast` or `img2img` |
+| `seed` | Integer from 0 to 2⁶³−1; omitted means random |
+| `width`, `height` | Multiples of 64; at least 64 per side; at most 2,097,152 pixels total |
 | `steps`, `cfg` | 1–60 steps; CFG 0–10 |
-| `image_base64` | Required for img2img: raw base64 PNG, JPEG, or WebP; no data-URI prefix or URL |
-| `lora_name`, `lora_strength` | Optional second model-only slot for photography/fast; installed and deployment-approved SFT adapter basename, strength −2 to 2 |
+| `image_base64` | Required for img2img: raw PNG/JPEG/WebP base64, without a data-URI prefix or URL |
+| `lora_name`, `lora_strength` | Approved, installed SFT adapter basename for the second photography/fast slot; strength −2 to 2 |
 
-The API img2img preset center-crops/resizes to the requested width and height, defaulting to 1024×1024; its denoise is fixed at 0.6. The browser graph instead preserves the input aspect ratio at approximately 1 MP. Img2img exposes no API LoRA slot. An image may contain at most 16 megapixels and 8192 pixels per side, with at most 7 MiB of decoded bytes; the entire encoded request must also fit [Runpod's request-size limits](https://docs.runpod.io/serverless/workers/handler-functions#payload-limits), including base64 expansion.
+API img2img center-crops/resizes to the requested dimensions, defaulting to 1024×1024, with denoise 0.6. It has no exposed LoRA slot. Input images are limited to 7 MiB decoded, 16 megapixels and 8192 pixels per side; the complete encoded request must also fit [Runpod's payload limit](https://docs.runpod.io/serverless/workers/handler-functions#payload-limits).
 
-The default deployment's approved adapter list contains only the bundled Destripe file. The two default LoRA slots are already configured in the graph; specifying that same adapter again adds a second patch, so leave the optional slot unused unless intentionally testing it. A maintainer can add a compatible, licensed adapter to the deployment's model files and approved catalog. The API accepts preset parameters rather than arbitrary graphs, local paths, or model download URLs.
+A cold API worker downloads the same model files. Two validated cold requests had **326 and 336 seconds of queue delay** before execution. Replacement workers can download them again; these observations are not a startup guarantee. Use asynchronous `/run` for long requests. Generation has a 600-second worker timeout after preparation; the Hub cold test allows 1,200,000 ms.
 
-## Files and persistence
+## Keep models and images
+
+The template requests a **60 GB container disk**, sufficient for first use without a persistent attachment. To retain models, workflows and images after stopping the Pod, select persistent storage mounted at `/workspace` in Runpod Storage. The current launch screen selects storage separately, so the legacy template volume field alone does not guarantee retention. Preserve the volume when stopping; replacing or deleting a Pod requires storage that outlives that Pod.
+
+For a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers can share the verified model cache while keeping databases and job files in separate temporary workspaces. Shared-cache concurrency has not been validated for this release.
+
+## Startup and package layout
+
+The startup script is included in the image at **`/opt/moss/scripts/entrypoint.sh`** and explicitly selected in the template's start-command field. It initializes Runpod SSH, starts the connection/progress page, prepares models and supervises ComfyUI. No external startup-script download is required. The image retains `tini` for process supervision.
+
+Application files live under `/opt/moss`, ComfyUI under `/opt/comfyui` and Python under `/opt/venv`. Mutable Pod data lives under `/workspace/moss/{models,input,output,user,temp,state}`; mounting a workspace does not hide the installed application.
 
 ```text
-.
-├── Dockerfile                    # one image for Pod and Serverless modes
-├── handler.py                    # Runpod queue SDK entry point
-├── requirements/                 # pinned runtime environment and constraints
-├── config/                       # model manifest and workflow catalog
-├── .dockerignore                 # small, explicit build context
-├── .runpod/
-│   ├── hub.json                  # Hub metadata and Serverless settings
-│   ├── tests.json                # real fast-preset generation test
-│   └── README.md                 # Hub listing instructions
-├── deploy/pod-template.json      # candidate Pod configuration and startup command
-├── deploy/pod-console.json       # native Runpod Connect and SSH settings
-├── docs/release.md               # build, validate, and publish gates
-├── workflows/ui/                 # browser graphs
-├── workflows/api/                # executable graph exports
-├── custom_nodes/moss/            # bundled workflow-template registration
-├── src/moss_runtime/             # preparation, persistence, gateway and API
-└── LICENSE / THIRD_PARTY_NOTICES.txt
+Dockerfile / handler.py        Container build and queue SDK entry point
+.runpod/                      Hub metadata, generation test and listing README
+requirements/ / config/       Locked dependencies, model manifest and preset catalog
+deploy/                       Pod template, explicit startup command and Connect settings
+workflows/ui/ / workflows/api/ Browser graphs and executable graph exports
+custom_nodes/moss/            Native workflow-template registration
+src/moss_runtime/ / scripts/  Preparation, connection gateway, API and validation tools
+docs/                         Release procedure and dated validation evidence
 ```
 
-Application files are baked under `/opt/moss`, ComfyUI under `/opt/comfyui`, and the Python environment under `/opt/venv`. Mutable data lives under `/workspace/moss/{models,input,output,user,temp,state}`. A workspace mount therefore does not hide the installed application. User changes and older downloaded weights should be preserved; an upgraded volume may use more space than a fresh installation.
-
-| Setting | Value |
+| Setting | Purpose |
 |---|---|
-| `MOSS_MODE` | `pod` for the browser; `serverless` for the queue worker |
-| `JUPYTER_PASSWORD` | Runpod supplies this native Connect token; do not put a shared value in the template |
-| `MOSS_PASSWORD` | Optional legacy/custom-deployment login; use a unique password of at least 12 characters |
-| `MOSS_DATA_DIR` | Mutable data root; defaults to `/workspace/moss` |
-| `MOSS_VOLUME_GB` | Optional capacity override for a known provisioned volume; the candidate uses detected free space |
-| `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain; standard Runpod origin is derived automatically |
+| `MOSS_MODE` | `pod` for ComfyUI; `serverless` for queue jobs |
+| `JUPYTER_PASSWORD` | Runpod supplies the native Connect token automatically |
+| `MOSS_PASSWORD` | Optional legacy/custom login; use a unique password of at least 12 characters |
+| `MOSS_DATA_DIR` | Mutable root; defaults to `/workspace/moss` |
+| `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain, without a path |
 
-The published `0.1.0` image resolves to `sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec`. Its [validation record](docs/validation.json) applies to that earlier runtime. The candidate deployment metadata is private and uses a staging tag until its own image and GPU checks pass; the old report does not validate it. See [the validation status](docs/validation-status.md). This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
+ComfyUI is exposed through the authenticated **8888** gateway; Runpod SSH uses port 22. The internal ComfyUI service remains private. Standard Runpod origins are derived automatically.
 
-Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI, and upstream workflow material retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).
+The tested `0.1.1` image, exact runtime revision and completed checks are recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). The public Pod template uses this tested image. The [release procedure](docs/release.md) separates image/template publication from Runpod Hub approval.
+
+Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI and upstream workflows retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

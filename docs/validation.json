@@ -1,34 +1,42 @@
 {
   "schema_version": 1,
-  "source_revision": "37236a8e329d51adf2591c197a678f437650cebc",
-  "image_digest": "sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec",
-  "validated_at": "2026-10-19T11:06:21.374219+00:00",
+  "source_revision": "0bf51872c7b9350a40f96cd8295d318bcef8b181",
+  "image_digest": "sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1",
+  "validated_at": "2026-10-20T11:37:59.540658+00:00",
   "gpu": {
-    "name": "NVIDIA L40S",
-    "vram_gb": 47.666,
+    "name": "NVIDIA GeForce RTX 4090",
+    "vram_gb": 25.253,
+    "vram_bytes": 25252724736,
+    "vram_gib": 23.518,
     "cuda_runtime": "13.0",
-    "driver": "580.126.09",
+    "driver": "595.91.07",
     "torch_version": "2.13.0+cu130"
   },
   "source_checks": {
-    "tests_passed": 71,
-    "source_ci_run": 39239185220,
-    "container_ci_run": 39239185374,
-    "pod_cpu_gate": true,
-    "serverless_cpu_gate": true,
+    "tests_passed": 79,
+    "source_ci_run": 39409238117,
+    "container_ci_run": 39409237490,
+    "in_image_package_gate": true,
+    "in_image_native_templates_gate": true,
+    "native_elf_files_checked": 409,
+    "inactive_amd_hip_files_reported_separately": 1,
+    "actual_gpu_host_driver_gate": true,
     "anonymous_image_pull_verified": true
+  },
+  "image_transfer": {
+    "compressed_bytes": 3747665350,
+    "previous_0_1_0_compressed_bytes": 10465719607,
+    "reduction_percent": 64.191,
+    "model_bytes_downloaded_on_cold_cache": 23509579072
   },
   "pod": {
     "fresh_volume": true,
     "volume_gb": 60,
+    "container_disk_gb": 60,
     "auth_verified": true,
-    "restart_preserved": true,
-    "restart_evidence": {
-      "container_process_start_confirmed": true,
-      "unchanged_file_sha256_count": 8,
-      "unchanged_model_inode_size_mtime_count": 6,
-      "unchanged_application_sha256_count": 2
-    },
+    "native_generated_connect_token": true,
+    "manual_password_required": false,
+    "image_identity_verified_via": "immutable control-plane image reference and baked-source checks",
     "jobs": [
       {
         "preset": "fast",
@@ -38,7 +46,8 @@
         "height": 768,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "4e986b3d7a32301fdc7668e42470e48e57aff8c3ccd5e3b9be3008cdea5f47aa"
+        "image_sha256": "454414640826f895e31c9717abf478f5c45a363d5482ccb178d61bcd6ec4bc60",
+        "client_elapsed_seconds": 28.696
       },
       {
         "preset": "photography",
@@ -48,7 +57,8 @@
         "height": 1664,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "e49d45d05e2b934bc5ff413d9f6b39f7d09c9669b6c19304d16a3c71dab38e5c"
+        "image_sha256": "54559ce25d9ce687a31e8950c9da341c35c3771619d7ad315b93dc2c18f32492",
+        "client_elapsed_seconds": 54.612
       },
       {
         "preset": "img2img",
@@ -58,69 +68,237 @@
         "height": 1024,
         "steps": 25,
         "cfg": 2.5,
-        "image_sha256": "c4e6a77b4b6a5aae642fdb498135edf08b16cd09607f77b95988b6defa03979d"
+        "image_sha256": "5e8e4b955166ac696b7f30e07057fd6d4dd50d7c83c14716e140889b5d131c03",
+        "client_elapsed_seconds": 20.582
       }
     ],
+    "restart_preserved": true,
+    "restart_evidence": {
+      "container_process_start_confirmed": true,
+      "unchanged_file_sha256_count": 8,
+      "unchanged_model_inode_size_mtime_count": 6,
+      "unchanged_application_sha256_count": 2,
+      "provider_http_500_reconciled_by_actual_process_and_files": true
+    },
+    "browser": {
+      "fresh_profile": true,
+      "native_workflows": [
+        {
+          "preset": "photography",
+          "native_import": true,
+          "root_nodes": 12,
+          "subgraphs": 0,
+          "rendered": true
+        },
+        {
+          "preset": "fast",
+          "native_import": true,
+          "root_nodes": 12,
+          "subgraphs": 0,
+          "rendered": true
+        },
+        {
+          "preset": "img2img",
+          "native_import": true,
+          "root_nodes": 12,
+          "subgraphs": 0,
+          "rendered": true
+        },
+        {
+          "preset": "enhanced",
+          "native_import": true,
+          "root_nodes": 5,
+          "subgraphs": 1,
+          "rendered": true
+        }
+      ],
+      "authentication": {
+        "unauthenticated_status": 401,
+        "cross_site_connect": true,
+        "clean_url": true,
+        "cookie": {
+          "name": "__Host-moss-session",
+          "secure": true,
+          "httpOnly": true,
+          "sameSite": "Strict",
+          "path": "/"
+        },
+        "javascript_cookie_hidden": true
+      },
+      "transport": {
+        "unauthenticated_http": 401,
+        "unauthenticated_websocket": 401,
+        "invalid_token": 401,
+        "native_readiness": 200,
+        "authenticated_public_origin_post": 405,
+        "foreign_origin_post": 403,
+        "authenticated_public_origin_websocket": 101,
+        "foreign_origin_websocket": 403,
+        "status": "passed",
+        "agent_owned_session": true,
+        "native_readiness_sets_no_cookie": true,
+        "no_generation_submitted": true
+      },
+      "prompt_enhanced": {
+        "completed": true,
+        "native_graph_to_prompt": true,
+        "prompt_upsampler": true,
+        "text_generate_executing_then_success": true,
+        "text_generate_cached": false,
+        "seed": 424243,
+        "width": 1024,
+        "height": 1024,
+        "steps": 25,
+        "cfg": 2.5,
+        "image_sha256": "9cb839ce3be4e3dc3ec543c439822d757563a62b02130fd954540a57e79c3a73"
+      },
+      "post_restart_all_four_workflows_verified": true,
+      "post_restart_transport_verified": true
+    },
+    "no_volume_first_use": {
+      "schema_version": 1,
+      "validated_at": "2026-10-20T11:20:59.702558+00:00",
+      "source_revision": "0bf51872c7b9350a40f96cd8295d318bcef8b181",
+      "image_digest": "sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1",
+      "hardware": {
+        "python": "3.11.17",
+        "torch": "2.13.0+cu130",
+        "cuda_runtime": "13.0",
+        "cuda_available": true,
+        "gpu": "NVIDIA GeForce RTX 4090",
+        "vram_bytes": 25252724736,
+        "nvidia_smi": "NVIDIA GeForce RTX 4090, 595.91.07, 24564",
+        "gateway_sha256": "42ea2e25c47e86f6f2db7975e02839e7a3986dbd6d8927723b07d2535ceae503"
+      },
+      "launch": {
+        "fresh_container": true,
+        "volume_gb": 0,
+        "container_disk_gb": 60,
+        "native_generated_token_present": true,
+        "manual_moss_password_required": false,
+        "storage_edit_required": false,
+        "hourly_rate_usd": 0.89,
+        "first_observed_gateway_seconds": 220.1,
+        "first_observed_ready_seconds": 452.7,
+        "timing_is_observation_upper_bound_on_one_host": true,
+        "model_bytes": 23509579072
+      },
+      "browser": {
+        "fresh_profile": true,
+        "cross_site_native_connect": true,
+        "unauthenticated_status": 401,
+        "clean_url_after_native_connect": true,
+        "secure_httponly_strict_session": true,
+        "early_visible_preparation": true,
+        "native_workflows": [
+          {
+            "preset": "photography",
+            "native_import": true,
+            "root_nodes": 12,
+            "subgraphs": 0,
+            "rendered": true
+          },
+          {
+            "preset": "fast",
+            "native_import": true,
+            "root_nodes": 12,
+            "subgraphs": 0,
+            "rendered": true
+          },
+          {
+            "preset": "img2img",
+            "native_import": true,
+            "root_nodes": 12,
+            "subgraphs": 0,
+            "rendered": true
+          },
+          {
+            "preset": "enhanced",
+            "native_import": true,
+            "root_nodes": 5,
+            "subgraphs": 1,
+            "rendered": true
+          }
+        ],
+        "transport": {
+          "post_status": 405,
+          "post_public_origin": true,
+          "websocket_status": 101,
+          "websocket_public_origin": true,
+          "websocket_initial_status": true
+        }
+      },
+      "real_user_actions": {
+        "native_connect_mouse_click": true,
+        "landing_card_mouse_click": true,
+        "prompt_keyboard_input": true,
+        "run_button_mouse_click": true,
+        "actual_frontend_prompt_request": true,
+        "matching_prompt_only": true,
+        "frontend_websocket_preserved": true,
+        "returned_image_verified": true,
+        "no_programmatic_graph_mutation": true,
+        "no_direct_prompt_fetch": true,
+        "no_history_or_queue_reads": true
+      },
+      "fresh_first_ui_render": {
+        "new_matching_output_observed": true,
+        "embedded_graph_semantically_matches_typed_graph": true,
+        "width": 1024,
+        "height": 1024,
+        "image_sha256": "d85cf0efe5f90b79fc129728c057896b3c38ea51592aa95fe5552c58a890c23c",
+        "observation_limit": "Initial observer omitted the frontend API alias; the first fresh output was recovered and its embedded graph verified."
+      },
+      "corrected_ui_capture": {
+        "exact_frontend_post_route": "/api/prompt",
+        "post_status": 200,
+        "public_origin_verified": true,
+        "frontend_websocket_route": "/ws",
+        "matching_returned_prompt_only": true,
+        "terminal_success": true,
+        "ui_post_count": 1,
+        "returned_image_sha256": "d85cf0efe5f90b79fc129728c057896b3c38ea51592aa95fe5552c58a890c23c",
+        "width": 1024,
+        "height": 1024,
+        "seed": 42,
+        "steps": 25,
+        "cfg": 2.5,
+        "cached_node_count": 11,
+        "retry_is_not_claimed_as_a_second_uncached_render": true
+      },
+      "visual_review": {
+        "own_png_viewed": true,
+        "actual_native_result_panel_screenshot_viewed": true
+      },
+      "intermediate_test_pod_cleanup": {
+        "terminated": true,
+        "confirmed_http_404": true
+      }
+    },
+    "cold_start_observations": {
+      "no_volume_ready_upper_seconds": 452.7,
+      "persistent_pod_ready_upper_seconds": 1134.8,
+      "observations_are_not_timing_guarantees": true
+    },
     "lora": {
       "model": "moss_image_sft_int8_convrot.safetensors",
       "adapter": "moss_sft_destripe_top64_bf16.safetensors",
       "strength": 1.5,
       "before_patch_keys": 0,
       "after_patch_keys": 24,
-      "nonzero_lora_patches": true,
-      "adapter_sha256": "fcd0d025f6a62dfe3171ab11fe9b3119eac735e22b94913c4efe45d8c69c2da9"
-    },
-    "browser": {
-      "native_workflows": [
-        {
-          "template": "photography-bf16",
-          "loaded": true,
-          "nodes": 12,
-          "subgraphs": 0
-        },
-        {
-          "template": "fast-sft-int8-lora",
-          "loaded": true,
-          "nodes": 12,
-          "subgraphs": 0
-        },
-        {
-          "template": "img2img-sft-int8",
-          "loaded": true,
-          "nodes": 12,
-          "subgraphs": 0
-        },
-        {
-          "template": "prompt-enhanced",
-          "loaded": true,
-          "nodes": 5,
-          "subgraphs": 1
-        }
-      ],
-      "unauthenticated_http_status": 401,
-      "unauthenticated_websocket_status": 401,
-      "authenticated_websocket_status": 101,
-      "public_origin_post_verified": true,
-      "foreign_origin_rejected": true,
-      "prompt_enhanced": {
-        "completed": true,
-        "native_graph_to_prompt": true,
-        "prompt_upsampler": true,
-        "text_generate_executed": true,
-        "seed": 424243,
-        "width": 1024,
-        "height": 1024,
-        "steps": 25,
-        "cfg": 2.5,
-        "image_sha256": "e37eeba77dd031bf49f06ec238bd7900062e8289dde84a9c451227a7c63c5e52"
-      },
-      "post_restart_transport_verified": true
+      "adapter_sha256": "fcd0d025f6a62dfe3171ab11fe9b3119eac735e22b94913c4efe45d8c69c2da9",
+      "patch_match_verified": true,
+      "check_device": "cpu",
+      "gpu_inference_verified_separately": true
     }
   },
   "serverless": {
     "fresh_worker": true,
     "configured_gpu": "NVIDIA GeForce RTX 4090",
-    "image_identity_verified_via": "endpoint-to-template control-plane image digest",
+    "sdk_version": "1.12.0",
+    "image_identity_verified_via": "endpoint control-plane reference and own worker metadata",
+    "container_disk_gb": 60,
+    "persistent_volume": false,
     "jobs": [
       {
         "preset": "fast",
@@ -128,8 +306,11 @@
         "seed": 42,
         "width": 768,
         "height": 768,
+        "steps": 25,
+        "cfg": 2.5,
         "image_sha256": "b305fccc0898a1c969251e38c496fd60bee783e091182590526ba7d56ebfc3aa",
-        "execution_ms": 13705
+        "client_elapsed_seconds": 357.268,
+        "execution_ms": 16723
       },
       {
         "preset": "photography",
@@ -137,8 +318,11 @@
         "seed": 424242,
         "width": 1216,
         "height": 1664,
-        "image_sha256": "53b999ebdfee722503157e0e76b6945454471ddf5e17d5540366ae1fc31fb0c4",
-        "execution_ms": 44831
+        "steps": 25,
+        "cfg": 2.5,
+        "image_sha256": "e6bdfab50746c448db217f951f34cf18a7bbe8572ff6e2016f8f9fd8a0d96f9f",
+        "client_elapsed_seconds": 58.919,
+        "execution_ms": 46991
       },
       {
         "preset": "img2img",
@@ -146,28 +330,45 @@
         "seed": 43,
         "width": 1024,
         "height": 1024,
-        "image_sha256": "fe2aa224d050b4b1b5ce9932fc5efd4727b2c8d4caf4de3e6cbf89407f567b10",
-        "execution_ms": 13086
+        "steps": 25,
+        "cfg": 2.5,
+        "image_sha256": "da8270c7e9b9bac185342231de58ecbfd6ab8fa1253e8e3d2879611e3f5ca0a0",
+        "client_elapsed_seconds": 49.267,
+        "execution_ms": 14914
       }
     ],
     "invalid_empty_prompt_rejected": true,
     "optional_second_lora": {
       "preset": "fast",
       "completed": true,
-      "seed": 42,
+      "seed": 44,
       "width": 768,
       "height": 768,
-      "image_sha256": "4350642bd4d51bce6ae525255538b1870c5360b5f5c787e773700e790336b3c0",
-      "execution_ms": 4969
+      "steps": 25,
+      "cfg": 2.5,
+      "image_sha256": "4da7e8fc12929597ea05b48e0c2ea8ac78ea6707b160f4fe429fa8992788c6c6",
+      "client_elapsed_seconds": 360.765,
+      "adapter": {
+        "name": "moss_sft_destripe_top64_bf16.safetensors",
+        "strength": 0.25,
+        "slot": "second"
+      },
+      "execution_ms": 13050
     },
-    "first_job_delay_ms": 420479,
+    "cold_job_delay_ms": [
+      326179,
+      336267
+    ],
     "workers_min": 0,
     "workers_max": 1,
-    "idle_timeout_seconds": 30
+    "idle_timeout_seconds": 30,
+    "disposable_endpoint_and_template_removed": true
   },
   "limits": [
-    "Execution, transport, persistence and returned image structure were checked; aesthetic quality was not benchmarked.",
-    "Cold-start delay is one fresh-worker observation, not a performance guarantee.",
-    "Hub build, automated tests and manual listing approval are separate external publication gates."
+    "Execution, browser interaction, response integrity and persistence were checked; aesthetic quality was not benchmarked.",
+    "Cold initialization depends on host registry and model-download connectivity. One host hit an image-configuration TLS timeout and was retired before startup.",
+    "The corrected repeated UI capture reused 11 cached nodes; the earlier fresh UI render and separate fresh GPU/API jobs establish inference.",
+    "API worker metadata does not independently establish its exact NVIDIA driver version.",
+    "Shared-network-cache concurrency and Hub approval are separate checks; Hub review is external."
   ]
 }

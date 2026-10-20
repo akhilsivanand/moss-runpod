@@ -5,7 +5,8 @@ Runs the default source checker before writing anything. ZIP members are sorted,
 rooted at moss-runpod/, and use fixed timestamps and permissions. The output must
 be outside this repository. A canonical docs/validation.json is included only if
 it satisfies the release checker's public GPU report schema; other local JSON
-reports and private validation artifacts are excluded.
+reports and private validation artifacts are excluded. The explicitly archived
+0.1.0 public report is retained for the documentation links.
 """
 
 from __future__ import annotations
@@ -71,6 +72,8 @@ def public_files(root, include_validation=False):
             allowed = path.suffix in {".yml", ".yaml"}
         if relative.as_posix() == "docs/validation.json":
             allowed = include_validation
+        if relative.as_posix() == "docs/validation-0.1.0.json":
+            allowed = True
         if allowed:
             yield path, relative
 

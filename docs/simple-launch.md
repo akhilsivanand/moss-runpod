@@ -1,39 +1,29 @@
-# Simplified launch — 0.1.1 candidate
+# Simple launch — 0.1.1
 
-The intended user flow is **Deploy → Connect → choose a workflow**. Runpod's Connect link supplies its platform-issued access token. Users do not create or copy a separate MOSS password. The preparation page shows startup phases, downloaded GB and percentage until the workflows are ready.
+**Deploy → Connect → MOSS ComfyUI → choose a workflow.** Runpod supplies the connection token. No separate password, terminal command, download token or storage edit is needed for first use.
 
-The public template still runs validated `0.1.0`. This branch is a private candidate; it is not a published replacement or a completed GPU validation report.
+The preparation page appears before model downloads finish and shows phases, downloaded GB and percentage. The six pinned model files total 23,509,579,072 bytes. One fresh Pod without persistent storage became ready after **452.7 seconds (about 7 min 33 s)**. On another Pod with persistent storage, readiness was established no later than **1,134.8 seconds (about 18 min 55 s)** after creation. The latter is an upper bound taken from the first new GPU-validation record. A separate earlier attempt encountered a registry TLS handshake failure and was retired. Placement, image transfer and model-download speeds vary; these are observations rather than a launch-time guarantee.
 
-## Startup and connection
+The 0.1.1 image transfers 3,747,665,350 compressed bytes, 64.19% less than 0.1.0's 10,465,719,607 bytes. This reduces image transfer; model downloads still account for 23.51 GB on a cold cache.
 
-The startup script is [`scripts/entrypoint.sh`](../scripts/entrypoint.sh), baked into the image as `/opt/moss/scripts/entrypoint.sh`. Both the image's `CMD` and the candidate template's explicit start command select it. The image retains `/usr/bin/tini --` as its entry point so signals and child processes are handled correctly. No external startup-script download is required.
+## The startup script
 
-The script initializes Runpod SSH, starts the gateway before downloading models, prepares the six pinned model files, and supervises ComfyUI. The candidate uses port **8888**, labeled **MOSS ComfyUI**. [Console metadata](../deploy/pod-console.json) enables the native token-bearing connection link; the [template](../deploy/pod-template.json) does not contain a shared token or password.
+[`scripts/entrypoint.sh`](../scripts/entrypoint.sh) is baked into the image at **`/opt/moss/scripts/entrypoint.sh`**. The image CMD and the template's explicit start command both select it. The image retains `/usr/bin/tini --` as its entry point. No external startup-script download is required.
 
-Runpod provides its token through the native Jupyter setting. The image prevents a separate Jupyter server from competing for port 8888 and serves MOSS there. A valid connection token becomes a secure, HTTP-only browser session and is removed from the URL. Existing explicit-password deployments and the Serverless API remain supported.
+The script initializes Runpod SSH, starts the authenticated progress page, prepares the models and supervises ComfyUI. The gateway uses port 8888, labeled **MOSS ComfyUI**; SSH uses port 22. The internal ComfyUI service remains private.
 
-## Storage
+Runpod's native connection setting supplies `JUPYTER_PASSWORD`. MOSS exchanges that token for a secure HTTP-only browser session and removes the token from the URL. The image prevents a separate Jupyter server from competing for port 8888. Existing explicit-password deployments remain supported; the separate Serverless API uses Runpod API authentication.
 
-A 60 GB container disk provides room for the models without requiring a storage edit before first use. The template also requests a 60 GB volume at `/workspace`, but the current Runpod workload-first launch screen chooses persistent storage separately and can launch without that attachment.
+## Optional persistent storage
 
-Users who want models and images retained after stopping or replacing a Pod must select persistent storage in Runpod Storage. A template volume field alone does not establish that retention. Attached data keeps models, edited workflows and images outside the baked application under `/opt`.
+The 60 GB container disk fits a fresh first-use installation without an attached volume. To keep models, edited workflows and images after stopping, choose persistent storage mounted at `/workspace` in Runpod Storage. The current launch screen chooses storage independently; a legacy template volume field does not prove a persistent attachment was created. Replacing/deleting a Pod needs storage that outlives that Pod.
 
-## Candidate validation
+Mutable data is stored under `/workspace/moss`; the installed application remains under `/opt`, so a workspace mount does not hide it. Preserve retained user files when upgrading. A volume containing earlier checkpoints can need more capacity than a fresh install.
 
-| Check | Status |
-|---|---|
-| CPU/source checks | 79 passed after the image-build repair |
-| Headless Chrome token/session test | Passed with two TLS origins; authenticated HTTP/WebSocket, clean URL and foreign-origin checks passed |
-| Final image build and in-image CPU checks | Pending |
-| Fresh task-owned GPU Pod and platform-issued Connect token | Pending |
-| New generation and restart preservation | Pending |
-| Candidate report and immutable image promotion | Pending |
-| Public template update and 0.1.1 release | Pending |
+## Validation and host compatibility
 
-The browser test verifies the application protocol; it does not establish that a deployed Runpod Connect button supplies the expected token. Verify that separately on a fresh task-owned Pod. Observe only its new test jobs and outputs, never user logs or history. Leave the user's stopped Pod untouched.
+Actual native token/startup checks passed on fresh Pods with and without persistent storage. The source suite passed 79 checks; the built image passed both CPU gates and the final task-owned Pod passed the 409-ELF dependency and GPU driver checks. The final Pod completed three preset generations, all four browser imports, fresh prompt-enhanced generation and public HTTP/WebSocket checks. Restart preserved eight task files, six model records and two application hashes, with a new process and healthy service confirmed afterward. The full four-workflow browser retest after restart also passed.
 
-[`validation.json`](validation.json) remains the historical `0.1.0` report. It must not be reused as proof for this candidate. Publication requires evidence for the exact new source and immutable image digest.
+The queue API passed three presets, optional second LoRA and empty-prompt rejection. The public Pod template uses the tested immutable image. See [validation status](validation-status.md) and the [release report](validation.json) for the exact tested image and completed scope; historical 0.1.0 evidence does not validate 0.1.1.
 
-## Host availability
-
-The runtime retains its pinned CUDA 13.0 user libraries. Deployment filters also allow CUDA 13.2-capable hosts, which Runpod currently reports in stock. NVIDIA documents driver backward compatibility for applications built against older CUDA versions. The actual candidate driver and generation checks still have to pass. See [NVIDIA compatibility](https://docs.nvidia.com/cuda/archive/13.0.1/cuda-toolkit-release-notes/index.html) and [Runpod CUDA filters](https://docs.runpod.io/sdks/graphql/manage-pods#filter-by-cuda-version).
+The runtime retains pinned CUDA 13.0 user libraries. Deployment metadata allows compatible host versions, including available 13.2-capable hosts. See [NVIDIA CUDA compatibility](https://docs.nvidia.com/cuda/archive/13.0.1/cuda-toolkit-release-notes/index.html) and [Runpod CUDA filters](https://docs.runpod.io/sdks/graphql/manage-pods#filter-by-cuda-version).

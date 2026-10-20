@@ -1,16 +1,10 @@
 # MOSS-Image SFT API
 
-> The 0.1.1 simplified Pod launch is a candidate. The completed results below apply to published 0.1.0; candidate image/GPU validation and publication remain pending.
+Generate images through Runpod's **Serverless queue API** with three curated presets: BF16 `photography`, INT8 `fast` and experimental latent `img2img`. For the browser editor, [deploy the separate ComfyUI Pod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu), then open **Connect → MOSS ComfyUI** and choose a workflow.
 
-Generate images with three presets: `photography` (SFT BF16 and full VAE), `fast` (SFT INT8 and small VAE), and experimental latent `img2img`. This Hub listing uses Runpod's queue-based Serverless API. For the interactive ComfyUI browser, use the separate Pod template described in the repository README.
+Deploy an available Hub listing to create your own endpoint. Use one supported NVIDIA GPU with at least 24 GB VRAM and a **60 GB container disk**. The worker runs with `MOSS_MODE=serverless`; Runpod API authentication protects its requests. No model-download token is required.
 
-**Release validation — 2026-10-19:** image `0.1.0` passes all three queue presets, an optional second-LoRA variant, and empty-prompt rejection; the four returned images were inspected. Pod GPU generation, all four browser workflows, prompt enhancement, authentication/WebSocket checks, restart preservation, and post-restart health checks also pass. Hub accepted the submission, but its first build is reported failed. The listing is not approved; a replacement release is being prepared. See the repository's validation record for the exact scope.
-
-Use one 24 GB NVIDIA GPU with a CUDA 13.0-compatible host and 60 GB container disk. Initial startup downloads and verifies 23.51 GB of public model files; no model-download token is required. For a persistent network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss` to retain the model cache across worker replacements. Job files and databases stay in separate temporary workspaces per worker.
-
-One cold API job reported about 7 minutes of delay before execution; this is one worker observation, and startup time varies. Ephemeral worker replacement may download the models again.
-
-Example `/run` request body:
+Send this body to `https://api.runpod.ai/v2/ENDPOINT_ID/run`, with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`:
 
 ```json
 {
@@ -26,12 +20,14 @@ Example `/run` request body:
 }
 ```
 
-A nonempty prompt is required. Once the Hub listing is approved, deploy it to create your own endpoint. Send jobs to `https://api.runpod.ai/v2/ENDPOINT_ID/run` with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`, then poll `/status/JOB_ID` on that endpoint. Completed jobs return base64 images, seed, and preset. Execution is limited to 600 seconds per job after worker preparation. The release's Hub test has a 1,200,000 ms cold-test timeout.
+Poll `/status/JOB_ID` on your endpoint for the returned job ID. Completed jobs return `output.images` containing base64 PNG bytes, plus `output.seed` and `output.preset`. A nonempty prompt is required. Generation is limited to 600 seconds after worker preparation; the Hub cold test allows 1,200,000 ms.
 
-For img2img, supply `image_base64` containing raw base64 PNG, JPEG, or WebP bytes, without a data-URI prefix or URL. The API resizes/center-crops to `width` and `height` (default 1024×1024), with denoise 0.6. The browser graph's approximately 1 MP aspect-preserving behavior is separate. Use at most 7 MiB of decoded image bytes so the encoded request fits Runpod's asynchronous request-size limit.
+First startup downloads and verifies **23.51 GB** of pinned public model files. Two validated cold requests had **326 and 336 seconds of queue delay** before execution; startup varies by host and network. Ephemeral replacement workers can repeat those downloads. A network volume mounted at `/runpod-volume` with `MOSS_DATA_DIR=/runpod-volume/moss` retains the model cache; worker databases and job files remain isolated. Shared-cache concurrency has not been validated.
 
-The worker runs with `MOSS_MODE=serverless` and uses Runpod API authentication. The separate 0.1.1 Pod candidate uses `MOSS_MODE=pod` and **Connect → MOSS ComfyUI** on port 8888, with Runpod supplying the connection token automatically. The published 0.1.0 Pod template retains its earlier port-8188 password setup until the candidate passes its own deployment checks.
+`photography` defaults to 1216×1664, 25 steps and CFG 2.5. `fast` defaults to 1024×1024 with the same steps/CFG. Both include Destripe and an optional second compatible SFT LoRA slot. The default approved adapter list contains only the bundled Destripe file; specifying it again adds a second patch. Other adapters require compatible installed weights and an updated approved catalog.
 
-The Pod gateway derives its standard Runpod public origin automatically. Custom domains can set `MOSS_PUBLIC_ORIGIN` to the exact HTTP(S) origin, without a path.
+For `img2img`, provide `image_base64` as raw PNG/JPEG/WebP base64 without a data-URI prefix or URL. The API center-crops/resizes to the requested dimensions, defaulting to 1024×1024 with denoise 0.6. Use at most 7 MiB decoded and respect the complete encoded request limit. This is ordinary latent repainting; the model is not instruction-edit trained. Img2img has no API LoRA slot. The official prompt-enhanced graph is available only in the browser collection.
 
-See the root README for graph details, image-input format, persistence, and licenses. Maintainers must complete `docs/release.md` before promoting this listing. Model weights and upstream software keep their separate licenses in `THIRD_PARTY_NOTICES.txt`.
+**0.1.1 API validation:** all three presets, the optional bundled second-LoRA path and empty-prompt rejection passed through Runpod SDK 1.12.0 on a fresh RTX 4090 endpoint with 60 GB ephemeral disk. Four returned PNGs were verified and inspected. The separate Pod checks also passed three GPU presets, four browser workflows, fresh prompt-enhanced generation, proxy authentication and retained-volume restart preservation. The full four-workflow browser retest after restart also passed. See the repository's [validation record](https://github.com/akhilsivanand/moss-runpod/blob/main/docs/validation.json) for exact source/image identity. Check the listing for its current build, test and review state; Hub approval remains a separate external step.
+
+See the root README for request limits, persistence and custom-domain settings. Packaging is MIT licensed; model weights and upstream software retain their own licenses in `THIRD_PARTY_NOTICES.txt`. No earnings are guaranteed.

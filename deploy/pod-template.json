@@ -1,7 +1,7 @@
 {
-  "name": "MOSS-Image SFT ComfyUI — simplified launch candidate",
+  "name": "MOSS-Image SFT ComfyUI",
   "category": "NVIDIA",
-  "imageName": "ghcr.io/akhilsivanand/moss-comfyui:staging-88f9bf57f54c42c68fb1ebeccad5e96c1c213733",
+  "imageName": "ghcr.io/akhilsivanand/moss-comfyui@sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1",
   "containerDiskInGb": 60,
   "volumeInGb": 60,
   "volumeMountPath": "/workspace",
@@ -16,7 +16,7 @@
   "env": {
     "MOSS_MODE": "pod"
   },
-  "isPublic": false,
+  "isPublic": true,
   "isServerless": false,
-  "readme": "# MOSS-Image SFT ComfyUI\n\nDeploy a Pod, open **Connect → MOSS ComfyUI**, and choose one of the four bundled workflows. Runpod supplies the connection token; there is no separate MOSS password to create.\n\nFirst launch downloads and verifies **23.51 GB** of public models. The connection page shows preparation progress and opens the workflows when ready. No Hugging Face token or terminal command is required.\n\nUse one NVIDIA GPU with at least 24 GB VRAM and a CUDA 13.0-compatible host. The candidate requests a 60 GB container disk so first use needs no storage edit. Select persistent storage mounted at `/workspace` if you want to retain models, edited workflows and images when stopping or replacing the Pod; the current launch screen chooses storage separately from the template.\n\n## Startup script\n\nThe image includes `/opt/moss/scripts/entrypoint.sh`. The template explicitly runs that command through the image's `tini` entry point. It initializes Runpod SSH, prepares the models, starts the protected connection page, and supervises ComfyUI. Do not replace it with a model-download command.\n\n## Candidate status\n\nThis is the private 0.1.1 simplified-launch candidate. The public template still uses validated 0.1.0. Candidate source/browser checks have passed; its built-image, fresh GPU deployment, native Runpod Connect and restart checks are pending. Do not publish until those checks pass for the exact candidate digest.\n\nWorkflows, API documentation and licenses: https://github.com/akhilsivanand/moss-runpod\n"
+  "readme": "# MOSS-Image SFT ComfyUI\n\nDeploy → **Connect → MOSS ComfyUI** → choose a workflow → enter a prompt → Run.\n\nRunpod supplies the connection token. No separate password, Hugging Face token, terminal command or storage edit is required for first use. The connection page shows preparation progress while six public model files (23.51 GB) download and verify. Two tested cold launches took about 7 min 33 s and no more than 18 min 55 s; timing depends on the host and network.\n\n## Included workflows\n\n- SFT Photography — BF16, 1216×1664, 25 steps, CFG 2.5.\n- SFT Fast — INT8 with two compatible LoRA slots, 1024×1024.\n- Image variation — experimental latent repainting.\n- Official SFT — browser prompt enhancement.\n\nUse one supported NVIDIA GPU with at least 24 GB VRAM. Compatible CUDA 13.0 and 13.2 hosts are enabled. The template requests a 60 GB container disk. For retained models, edited workflows and images, select persistent storage mounted at `/workspace` in Runpod Storage; the launch screen selects that separately.\n\n## Startup script\n\nThe image includes `/opt/moss/scripts/entrypoint.sh`, explicitly selected as the Container start command. It initializes Runpod SSH, starts the protected progress page, prepares models and supervises ComfyUI through the image's `tini` entry point. No external startup-script download is needed.\n\nThe exact 0.1.1 image passed fresh browser generation, all four workflow imports, GPU presets, compatible LoRA inference, prompt enhancement, API and restart-preservation checks. Execution tests do not guarantee a particular aesthetic result.\n\nDocumentation, API examples, licenses and validation: https://github.com/akhilsivanand/moss-runpod\n"
 }

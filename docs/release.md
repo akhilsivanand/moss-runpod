@@ -1,71 +1,70 @@
-# Release 0.1.1 candidate
+# Releasing MOSS-Image 0.1.1
 
-This candidate simplifies the ComfyUI Pod launch to **Deploy → Connect → choose a workflow**, using Runpod's own connection token and visible preparation progress. The queue-based Hub API remains a separate delivery path in the same image.
+One immutable image serves two interfaces: the authenticated ComfyUI Pod and the separate Serverless queue API. Publish only after checks for that exact image and runtime pass. The full four-workflow browser retest after restart passed. See validation status for current publication state. GitHub publication and a public Pod template do not establish Runpod Hub approval.
 
-The public Pod template and GitHub release remain on `0.1.0`. The candidate image build, actual platform Connect flow, fresh GPU generation and restart checks must pass before replacement. [Candidate status](simple-launch.md) records the remaining checks. [`validation.json`](validation.json) records only the earlier `0.1.0` runtime and must not validate this candidate.
+## Package and image
 
-## Source and image gates
+Keep a single root `Dockerfile` and root `handler.py`, with Hub files in `.runpod/{hub.json,tests.json,README.md}`. Exclude credentials, deployment journals, logs, generated images, model weights and virtual environments from Git, build context and release archives.
 
-Keep one root `Dockerfile` and root `handler.py`. Publish this directory as the repository root so Runpod can discover those files and `.runpod/{hub.json,tests.json,README.md}`. Do not include credentials, local deployment records, logs, generated images, weights or virtual environments in Git, the Docker context or the release archive.
-
-Run the checks with Python 3.11:
+With Python 3.11, run:
 
 ```sh
 python -m pip install -r requirements/test.txt
 python -m pytest -q
 python scripts/check_release.py
 docker build --check .
-docker build --platform linux/amd64 --tag ghcr.io/akhilsivanand/moss-comfyui:candidate .
-docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand/moss-comfyui:candidate -m moss_runtime.bootstrap --check-package
-docker run --rm --entrypoint /opt/venv/bin/python ghcr.io/akhilsivanand/moss-comfyui:candidate /opt/moss/scripts/smoke_container.py
 ```
 
-Confirm that the image contains `/opt/moss`, `/opt/comfyui`, `/opt/venv` and upstream licenses independently of `/workspace`. Its entry point is `/usr/bin/tini --`; its startup command is `/opt/moss/scripts/entrypoint.sh`. The candidate template makes that command explicit. CPU checks establish package and node-schema compatibility, not GPU execution.
+Build Linux AMD64 in the container workflow, run both mandatory in-image CPU gates and verify the exact manifest anonymously after push. The application belongs under `/opt/moss`, ComfyUI under `/opt/comfyui` and Python under `/opt/venv`; `/workspace` holds mutable data. Preserve upstream license notices. The entry point is `/usr/bin/tini --`; CMD is `/opt/moss/scripts/entrypoint.sh`.
 
-The pinned model manifest contains six public files totaling **23,509,579,072 bytes**. Verify immutable revisions, sizes and SHA256 values without a download token. Preserve each component's license and the package's third-party notices.
+The built, GPU-tested 0.1.1 image is:
 
-## Fresh Pod gate
+```text
+ghcr.io/akhilsivanand/moss-comfyui@sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1
+```
 
-Create a private template from [`deploy/pod-template.json`](../deploy/pod-template.json) and apply the native connection settings in [`deploy/pod-console.json`](../deploy/pod-console.json). Use a CUDA 13.0-compatible NVIDIA GPU with at least 24 GB VRAM, 60 GB container disk and HTTP port 8888 plus SSH port 22. Runpod must supply the native connection token through its enabled Connect/Jupyter setting. The template must not require a manual password or capacity environment variable.
+Runtime source is `0bf51872c7b9350a40f96cd8295d318bcef8b181`. Record a later packaging/documentation revision separately. The image is 3,747,665,350 compressed bytes; the six pinned model files total 23,509,579,072 bytes. Neither source-only checks nor historical 0.1.0 GPU results validate this image.
 
-Deploy once without a persistent attachment to confirm first use does not require storage edits. Verify the actual native **Connect → MOSS ComfyUI** link, token exchange and clean URL. Observe the preparation page before models are ready, including accurate transfer totals and bounded public status information. Check authentication on the UI, graph API, images and WebSocket; foreign origins must be rejected. Confirm configured Runpod SSH still works.
+## Pod checks
 
-For persistence validation, attach fresh persistent storage at `/workspace`. Submit only newly authorized test jobs for photography, fast and img2img, and record their dimensions and image checksums. Verify actual nonzero Destripe patches and the official prompt-enhanced graph through the browser. Observe only these jobs' events and outputs; do not inspect user logs, unrelated history or prior images.
+Use a private template derived from [`pod-template.json`](../deploy/pod-template.json) and [`pod-console.json`](../deploy/pod-console.json). Keep the image digest pinned, container disk 60 GB, gateway 8888/SSH 22, explicit startup CMD and enabled native connection setting. Runpod must generate the token; do not publish a shared password.
 
-The bundled GPU helper can submit the three preset jobs to a task-owned staging Pod:
+Validate a fresh first launch without a persistent volume: actual **Connect → MOSS ComfyUI**, platform token exchange, clean URL, visible download phases/progress and readiness. Check unauthenticated UI/API/images/WebSocket, valid sessions and foreign-origin rejection through the public proxy. Verify configured SSH still works. Preserve user restrictions on logs and content.
+
+On a fresh persistent `/workspace` attachment, run only newly authorized photography, fast and img2img jobs. Verify images, dimensions, seeds and checksums. Import all four browser workflows, including nested-subgraph serialization, and actually execute the official prompt-enhanced path. A successful import alone is insufficient.
+
+The bundled helper submits three new preset jobs to a task-owned staging Pod:
 
 ```sh
 /opt/venv/bin/python /opt/moss/scripts/validate_gpu.py --run --output-dir /workspace/moss/validation/fresh-image-smoke-01
 ```
 
-Use a new output directory. This helper supplements actual browser, API and restart checks; its output alone is not a publication report. Edit one task-created workflow and add test input/output files, then restart with the same volume. Verify those files, model metadata and baked application hashes are preserved. Do not restart the user's stopped Pod for this check.
+Use a new output directory. For restart validation, record task-created workflow/input/output hashes, six model inode/mtime/size records and the baked application identity. Restart with retained storage; compare records and repeat health/browser HTTP/WebSocket checks. Do not restart unrelated user Pods. Leave the final working Pod running when requested.
 
-The standard public origin is derived from trusted Runpod identity and the active gateway port. A custom domain may set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin. Test browser HTTP and WebSocket traffic through the actual proxy; direct loopback tests do not cover that path.
+## Queue API checks
 
-## Queue API gate
+Use the same immutable image, `MOSS_MODE=serverless`, one 24 GB GPU and a 60 GB disk. The validation endpoint used min 0, max 1, idle timeout 30 seconds and a CUDA host minimum of 13.0. Current stock may support 13.2; verify actual hardware/driver compatibility before promotion rather than requiring unavailable exact host versions.
 
-Deploy the same immutable image as a private Serverless worker with `MOSS_MODE=serverless`, one 24 GB GPU, CUDA 13.0 host compatibility and 60 GB disk. This is a queue API, not a load-balanced UI service.
+Submit the exact `.runpod/tests.json` input through the SDK to a fresh cold endpoint. Verify a 768×768 PNG, seed 42 and preset `fast`. Also exercise photography 1216×1664, img2img using only that new fast image, a nonzero approved second LoRA and empty-prompt rejection. Observe only these jobs, never unrelated logs/history. Keep preparation queue delay separate from execution time.
 
-Run the exact `.runpod/tests.json` fast input on a cold worker and verify a decodable 768×768 image, seed 42 and preset `fast`. Then verify photography, img2img, an optional approved second-LoRA slot and meaningful rejection of invalid input. The Hub test allows 1,200,000 ms for cold preparation; actual generation is limited to 600 seconds after initialization. Record preparation separately from inference.
+These five 0.1.1 API checks passed via Runpod SDK 1.12.0; four images were verified and inspected. Two cold delays were 326,179 and 336,267 ms. The 600-second generation timeout begins after preparation; the Hub cold-test timeout is 1,200,000 ms. The disposable endpoint/source template were deleted and 404 verified after testing; existing published API resources were left unchanged.
 
-For a shared network volume at `/runpod-volume`, `MOSS_DATA_DIR=/runpod-volume/moss` retains the verified model cache while worker job files and databases remain isolated. Test concurrency and worker replacement before claiming those storage paths have been validated. Ephemeral replacement can download all 23.51 GB again.
+A persistent Serverless cache at `/runpod-volume` can use `MOSS_DATA_DIR=/runpod-volume/moss`, while each worker keeps isolated databases/job files. Shared-cache concurrency has not been exercised; validate before claiming it. Without a retained cache, replacement workers can download all 23.51 GB again.
 
-## Publication gate
+## Publish and verify
 
-Record the candidate's own tested source commit, immutable image digest, hardware, completed jobs, authentication and restart checks in the public validation report. Include no prompts, credentials, Pod IDs, private paths or generated images. Run:
+Record completed 0.1.1 evidence in [`validation.json`](validation.json): source revision, exact digest, hardware/driver, jobs with seeds/dimensions/image SHA256, browser/auth checks and restart preservation. Exclude prompts, credentials, resource/job IDs, private paths and generated images. Archive the older report as [`validation-0.1.0.json`](validation-0.1.0.json).
+
+Run the fail-closed publication gate:
 
 ```sh
 python scripts/check_release.py --publish
 ```
 
-The gate requires a digest-pinned Pod image matching the GPU report; a staging tag plus historical report is insufficient. Promote the exact tested manifest to `:0.1.1`, verify anonymous access and digest identity, then publish the same already-tested Pod template. GitHub repository visibility does not establish GHCR package visibility.
+Promote the **same tested manifest** to `:0.1.1`; verify anonymous access and digest identity. Update public template 8m8mm2pkpw to that exact image and verify its explicit start command, 8888 **MOSS ComfyUI** label, native connection setting, storage defaults and README. Test the actual public deploy path. Do not point users at untested mutable staging tags.
 
-Create a GitHub `v0.1.1` release from the final packaging commit with the checked source archive, checksum and public validation report. Record the tested runtime separately if a final documentation commit follows it. Update public READMEs with the actual release, template and validation status only after the actions succeed.
+Package the final source with the repository helper and validate the extracted archive. Publish GitHub `v0.1.1` from the final packaging commit with its source ZIP, SHA256 file and public validation report; download public assets and verify their exact bytes. Apply the final README/status only after the corresponding publication actions succeed.
 
-Submit through [Runpod Hub](https://console.runpod.io/hub) following its [publishing guide](https://docs.runpod.io/hub/publishing-guide). Hub indexes GitHub releases and then builds, tests and manually reviews them. Template publication and a successful build do not establish Hub approval; keep the status pending until Runpod confirms the listing is approved.
+Submit the release through normal [Runpod Hub publishing](https://docs.runpod.io/hub/publishing-guide). Check its actual build, test, listing and review state; record any failure accurately. Submission acceptance, image build and template visibility are separate from manual approval. Do not claim approval while pending.
 
-## Published 0.1.0 baseline
-
-The earlier release validated runtime `37236a8e329d51adf2591c197a678f437650cebc` and image `sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec`. Its 71 source tests, fresh Pod/API generation, four native workflows, prompt enhancement, browser security and restart checks passed. See [the historical report](validation.json) and [validation status](validation-status.md) for scope. That evidence applies to 0.1.0 only.
-
-Creator rewards depend on Runpod's current program and approval. The [Hub revenue-sharing program](https://docs.runpod.io/hub/revenue-sharing) awards Runpod credits rather than a cash template sale; no earnings are guaranteed.
+Creator rewards depend on Runpod's current program and approval. The [revenue-sharing program](https://docs.runpod.io/hub/revenue-sharing) awards Runpod credits; there is no guaranteed income or cash template sale.
