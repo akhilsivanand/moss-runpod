@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "version": "0.1.2",
-  "recorded_at": "2026-10-20T13:11:40.005563+00:00",
+  "recorded_at": "2026-10-20T18:08:15.582547+00:00",
   "runtime_source_revision": "a14d011be32b86447a06c88531f0c334b9b86f08",
   "packaging_revision": "d1ea3b1469420d0ed374a5268673d85ef7ae222c",
   "image": {
@@ -54,7 +54,13 @@
     "listed": false,
     "reject_note_present": false,
     "approval_confirmed": false,
-    "diagnostic_scope": "Build metadata only; no build logs, Pod logs or history read."
+    "diagnostic_scope": "Normal maintainer build.error and listing metadata only; no Pod logs, build logs or history read.",
+    "normal_maintainer_retry_count": 1,
+    "latest_build_duration_seconds": 25.495,
+    "failure_stage": "GitHub repository archive download",
+    "source_download_http_status": 401,
+    "exact_source_archive_anonymously_readable_http_status": 200,
+    "reconnection": "Normal GitHub App reauthorization opened; awaiting required browser completion"
   },
   "notes": [
     "This post-upload publication record supplements the immutable runtime validation report attached to the release.",

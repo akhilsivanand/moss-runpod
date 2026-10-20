@@ -32,7 +32,7 @@ Fresh Pod generation, native browser, prompt enhancement and restart checks pass
 | Disposable API cleanup | Endpoint/source template deleted and 404 verified; existing published API resources unchanged |
 | Stable 0.1.2 tag and public Pod template | Tested manifest promoted without rebuilding; anonymous digest identity and template image/start command/native Connect/storage/README readback verified |
 | GitHub v0.1.2 release | Public release/tag target and all three downloaded assets verified anonymously; archive extraction/publication check passed |
-| Runpod Hub | Submission accepted at the correct commit; build failed after 13.339 seconds without an image or test record; not listed or approved |
+| Runpod Hub | Submission accepted; source download fails with GitHub HTTP 401 before Dockerfile execution. One normal retry repeated the failure; no image/tests or approval. GitHub reconnection pending |
 
 ## Layout preservation scope
 
@@ -68,4 +68,4 @@ The current [validation report](validation.json) must include only completed 0.1
 
 The [publication record](publication-0.1.2.json) records post-upload checks. The release ZIP and attached runtime report remain immutable; later Hub status is recorded here on repository main.
 
-The Hub failure is separate from the successful direct Pod and queue API runtime checks. Build metadata alone does not identify the cause; the image and Pod release remain available.
+The Hub failure is separate from the successful direct Pod and queue API runtime checks. The normal maintainer `build.error` field identifies a GitHub authorization failure (HTTP 401) while downloading the exact source archive, before Dockerfile execution. The same archive is anonymously readable (HTTP 200). A normal maintainer retry repeated the 401 after 25.495 seconds. The GitHub connection needs reauthorization; the image and Pod release remain available.

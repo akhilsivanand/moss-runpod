@@ -6,6 +6,7 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+import zipfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -110,6 +111,28 @@ class ReleaseChecks(unittest.TestCase):
         (self.root / "docs/validation.json").unlink(missing_ok=True)
         with self.assertRaisesRegex(checker.ReleaseError, "validation.json"):
             checker.check_release(self.root, publish=True)
+
+    def test_archive_retains_reviewed_publication_record_without_other_json(self):
+        spec = importlib.util.spec_from_file_location(
+            "package_release", self.root / "scripts/package_release.py")
+        packager = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(packager)
+        (self.root / "docs/unreviewed-publication.json").write_text(
+            json.dumps({"not_for_release": True}))
+        output = Path(self.temporary.name) / "source.zip"
+
+        packager.package_release(self.root, output)
+
+        with zipfile.ZipFile(output) as archive:
+            record = "docs/publication-0.1.2.json"
+            self.assertEqual(archive.read("moss-runpod/" + record),
+                             (self.root / record).read_bytes())
+            self.assertNotIn("moss-runpod/docs/unreviewed-publication.json",
+                             archive.namelist())
+            extracted = Path(self.temporary.name) / "extracted"
+            archive.extractall(extracted)
+        self.assertEqual(checker.check_release(extracted / "moss-runpod", publish=True)["publish"],
+                         "passed")
 
 
 if __name__ == "__main__":
