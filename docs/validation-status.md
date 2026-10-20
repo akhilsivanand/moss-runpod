@@ -6,7 +6,7 @@ Release 0.1.1 uses runtime source `0bf51872c7b9350a40f96cd8295d318bcef8b181` and
 ghcr.io/akhilsivanand/moss-comfyui@sha256:816f8e002989b700678f2efc53c3dc08e799a69f2b61079e1c80d1406be792c1
 ```
 
-Publication is in progress and awaits recorded verification. The public template, stable image tag, GitHub release and Hub state must be verified independently; successful deployment tests do not establish Hub approval.
+The public Pod template and stable `0.1.1` image tag use the tested immutable image. GitHub release assets and Runpod Hub status are tracked separately; successful deployment tests do not establish Hub approval.
 
 | Check | Result |
 |---|---|
@@ -28,10 +28,12 @@ Publication is in progress and awaits recorded verification. The public template
 | Fresh queue API | All three presets, optional bundled second LoRA and expected empty-prompt rejection passed via Runpod SDK 1.12.0 |
 | API output integrity | Four returned PNGs verified, hashed and viewed; sizes 768², 1216×1664, 1024² and 768² |
 | Disposable API cleanup | Task-created endpoint/source template deleted; 404 verified; existing published endpoint/template unchanged |
-| Public Pod template | Verified public with the tested immutable image, explicit startup command, native Connect and updated README |
-| Stable image 0.1.1 | Promotion in progress; awaiting recorded verification |
-| GitHub v0.1.1 release | Publication in progress; awaiting recorded verification |
-| Runpod Hub | Publication in progress; awaiting recorded build/test/review verification; approval is external |
+| Public Pod template | Verified public with the tested immutable image, explicit startup command, native Connect and updated README; fresh unsigned browser rendered the selected template |
+| Stable image 0.1.1 | Exact tested manifest promoted through [GitHub Actions](https://github.com/akhilsivanand/moss-runpod/actions/runs/39417149680); anonymous digest verification passed |
+| GitHub v0.1.1 release | Source ZIP and extracted publication checks passed; public artifacts are tracked on the [release page](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.1) |
+| Runpod Hub | New release requires Hub build, test and external review; check the [listing](https://console.runpod.io/hub/listing/akhilsivanand/moss-runpod) for availability |
+
+The public deploy page and template metadata were checked in a fresh unsigned browser. Runpod's sign-in modal prevented an authenticated console launch; equivalent task-owned GPU deployments were created through the API, and actual ComfyUI use was validated in the browser.
 
 ## Pod observations
 

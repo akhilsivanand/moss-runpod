@@ -370,5 +370,24 @@
     "The corrected repeated UI capture reused 11 cached nodes; the earlier fresh UI render and separate fresh GPU/API jobs establish inference.",
     "API worker metadata does not independently establish its exact NVIDIA driver version.",
     "Shared-network-cache concurrency and Hub approval are separate checks; Hub review is external."
-  ]
+  ],
+  "publication_checks": {
+    "public_template": {
+      "immutable_image_matches": true,
+      "native_connection_enabled": true,
+      "explicit_start_command_verified": true,
+      "readme_verified": true,
+      "anonymous_metadata_http_status": 200,
+      "fresh_browser_selected_template_rendered": true,
+      "authenticated_console_launch_tested": false,
+      "scope": "Public deploy screen and selected metadata checked behind Runpod sign-in; equivalent task-owned GPU launches and ComfyUI browser use tested separately."
+    },
+    "stable_image": {
+      "version": "0.1.1",
+      "same_manifest_digest": true,
+      "anonymous_verification_passed": true,
+      "promotion_workflow_run": 39417149680,
+      "rebuild_performed": false
+    }
+  }
 }
