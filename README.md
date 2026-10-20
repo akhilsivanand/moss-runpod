@@ -1,6 +1,6 @@
 # MOSS-Image on Runpod
 
-> **Simplified-launch candidate:** automatic Runpod Connect login and visible startup progress are being validated on this branch. The public `0.1.0` template remains unchanged. See [candidate notes](docs/simple-launch.md).
+> **0.1.1 candidate:** a simpler **Deploy → Connect → choose a workflow** flow is under validation. The public `0.1.0` template remains unchanged. See [candidate status](docs/simple-launch.md).
 
 MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller INT8 preset, and experimental latent img2img. Use the browser UI on a Pod or submit image jobs through the Runpod Hub queue API. Both use the same container and pinned model files.
 
@@ -8,18 +8,23 @@ MOSS-Image SFT with three curated ComfyUI workflows: BF16 photography, a smaller
 
 ## Open the ComfyUI browser UI
 
-[Deploy ComfyUI on Runpod](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu). The public template pins the validated image.
+The **0.1.1 candidate** reduces launch to three steps:
 
-1. Deploy with one NVIDIA GPU with at least 24 GB VRAM, a CUDA 13.0-compatible host, 40 GB container disk, and a 60 GB persistent volume mounted at `/workspace`. The template sets `MOSS_VOLUME_GB=60`; update it to match the provisioned volume size if you resize the volume.
-2. Set `MOSS_MODE=pod` and your own `MOSS_PASSWORD` of at least 12 characters before starting. There is no default password. Prefer a Runpod Secret for the password. Leave the image's start command unchanged.
-3. Open the HTTP service on port **8188**. The same address shows preparation progress while models download. When prompted, sign in as **moss** with your configured password.
-4. Open `/?template=photography-bf16&source=moss` on that service, enter a prompt, and run the graph. The **Workflows** panel also contains the bundled graphs.
+1. Deploy a Pod with one CUDA 13.0-compatible NVIDIA GPU with at least 24 GB VRAM.
+2. Open **Connect → MOSS ComfyUI**. Runpod supplies its connection token automatically.
+3. Wait for the preparation page to finish, then choose a workflow and enter a prompt.
 
-Initial startup downloads and verifies **23.51 GB** across six public model files listed in the [pinned model manifest](config/models.json). It is not instant; download speed and the selected host determine preparation time. No Hugging Face token is required. Restarts reuse verified models on the attached volume. Retain that volume to preserve your files.
+The candidate requests a 60 GB container disk. No separate MOSS password, model-download token, terminal command, or storage edit is needed for first use. The preparation page shows phases, downloaded GB and percentage while the six pinned model files download and verify. Initial preparation transfers **23.51 GB**, so time depends on the selected host and download connection.
 
-Port 22 is available for SSH using Runpod's configured SSH key. Expose the password-protected gateway on 8188 for ComfyUI; the internal service on `127.0.0.1:8189` stays private. Public health endpoints return readiness and startup phase. Detailed download progress requires login.
+For models and images you want to keep after stopping or replacing the Pod, choose persistent storage mounted at `/workspace` in Runpod Storage. The current Runpod launch screen selects storage separately; the template's legacy volume setting alone does not guarantee a persistent attachment. Restarts reuse verified models when the data is retained.
 
-The gateway derives the standard Runpod public origin automatically from the Pod identity. For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com` (include a nondefault port if needed, without a path).
+The startup script is included in the image: [`scripts/entrypoint.sh`](scripts/entrypoint.sh), installed as **`/opt/moss/scripts/entrypoint.sh`**. The template explicitly selects that command and preserves the image's `tini` entry point. It initializes Runpod SSH and starts the supervised model preparation, connection page and ComfyUI services. The candidate makes the command explicit in the template's start-command field.
+
+The candidate uses HTTP port **8888** for **MOSS ComfyUI** and port 22 for Runpod SSH. Its [Pod template](deploy/pod-template.json) and [console connection settings](deploy/pod-console.json) are a pair: the console must enable Runpod's native token-bearing Connect link. The internal ComfyUI service stays private.
+
+The public [0.1.0 template](https://console.runpod.io/deploy?template=8m8mm2pkpw&type=gpu) still uses the earlier password-based setup on port 8188. It has not been replaced by this candidate. See [candidate validation and remaining gates](docs/simple-launch.md).
+
+For a custom domain, set `MOSS_PUBLIC_ORIGIN` to its exact HTTP(S) origin, such as `https://comfy.example.com`, including a nondefault port if needed and no path.
 
 ## Choose a workflow
 
@@ -96,7 +101,8 @@ The default deployment's approved adapter list contains only the bundled Destrip
 │   ├── hub.json                  # Hub metadata and Serverless settings
 │   ├── tests.json                # real fast-preset generation test
 │   └── README.md                 # Hub listing instructions
-├── deploy/pod-template.json      # public Pod configuration with pinned image
+├── deploy/pod-template.json      # candidate Pod configuration and startup command
+├── deploy/pod-console.json       # native Runpod Connect and SSH settings
 ├── docs/release.md               # build, validate, and publish gates
 ├── workflows/ui/                 # browser graphs
 ├── workflows/api/                # executable graph exports
@@ -110,11 +116,12 @@ Application files are baked under `/opt/moss`, ComfyUI under `/opt/comfyui`, and
 | Setting | Value |
 |---|---|
 | `MOSS_MODE` | `pod` for the browser; `serverless` for the queue worker |
-| `MOSS_PASSWORD` | Your own password of at least 12 characters; required in Pod mode |
+| `JUPYTER_PASSWORD` | Runpod supplies this native Connect token; do not put a shared value in the template |
+| `MOSS_PASSWORD` | Optional legacy/custom-deployment login; use a unique password of at least 12 characters |
 | `MOSS_DATA_DIR` | Mutable data root; defaults to `/workspace/moss` |
-| `MOSS_VOLUME_GB` | Pod capacity check in decimal GB; `60` for the supplied 60 GB volume; adjust when resizing |
+| `MOSS_VOLUME_GB` | Optional capacity override for a known provisioned volume; the candidate uses detected free space |
 | `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain; standard Runpod origin is derived automatically |
 
-The public image `ghcr.io/akhilsivanand/moss-comfyui:0.1.0` resolves to the tested digest `sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec`. The Pod configuration pins that digest. See [the validation record](docs/validation-status.md) for the tested revision and exact scope. This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
+The published `0.1.0` image resolves to `sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec`. Its [validation record](docs/validation.json) applies to that earlier runtime. The candidate deployment metadata is private and uses a staging tag until its own image and GPU checks pass; the old report does not validate it. See [the validation status](docs/validation-status.md). This repository contains no personal endpoints, generated samples, private runtime data, or embedded credentials.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI, and upstream workflow material retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

@@ -34,8 +34,12 @@ def library_environment(roots):
     """Mirror the pip CUDA/Torch library locations their loaders use."""
     directories = set()
     for root in roots:
-        for marker in root.rglob("libtorch_global_deps.so"):
-            directories.add(str(marker.parent))
+        for name in ("libtorch_global_deps.so", "libtriton.so"):
+            directories.update(str(marker.parent) for marker in root.rglob(name))
+        # auditwheel bundles private dependencies beside scientific wheels.
+        # Their importing extensions normally load these through their RPATH;
+        # checking a private dependency directly must use the same directory.
+        directories.update(str(path) for path in root.rglob("*.libs") if path.is_dir())
         for namespace in root.rglob("nvidia"):
             if namespace.is_dir():
                 directories.update(str(path) for path in namespace.rglob("lib") if path.is_dir())
@@ -46,15 +50,27 @@ def library_environment(roots):
     return environment
 
 
-def check(roots, require_driver=False):
+def check(roots, require_driver=False, cuda_only=False):
     environment = library_environment(roots)
     failures = []
     deferred = set()
+    excluded = []
     count = 0
     for path in shared_libraries(roots):
+        # The same Kitchen wheel ships mutually exclusive CUDA and AMD HIP
+        # extensions. An NVIDIA image cannot execute the HIP backend and does
+        # not need ROCm. Keep this exclusion explicit and scoped to that backend;
+        # never allow missing AMD libraries in unrelated runtime extensions.
+        if cuda_only and ("comfy_kitchen", "backends", "hip") in tuple(
+                zip(path.parts, path.parts[1:], path.parts[2:])):
+            excluded.append({"file": str(path), "backend": "AMD HIP"})
+            continue
         count += 1
+        file_environment = environment.copy()
+        file_environment["LD_LIBRARY_PATH"] = ":".join(
+            value for value in (str(path.parent), environment["LD_LIBRARY_PATH"]) if value)
         try:
-            result = subprocess.run(["ldd", str(path)], env=environment, capture_output=True,
+            result = subprocess.run(["ldd", str(path)], env=file_environment, capture_output=True,
                                     text=True, timeout=20, check=False)
         except (OSError, subprocess.TimeoutExpired) as error:
             failures.append({"file": str(path), "error": str(error)})
@@ -73,6 +89,7 @@ def check(roots, require_driver=False):
         failures.append({"error": "No ELF shared libraries found under the requested roots."})
     return {"status": "failed" if failures else "passed", "checked_native_files": count,
             "host_driver_libraries": sorted(deferred), "require_driver": require_driver,
+            "excluded_native_files": len(excluded), "excluded_backends": excluded,
             "failures": failures}
 
 
@@ -82,12 +99,14 @@ def main():
                         help="Installed runtime directory to scan; may be repeated")
     parser.add_argument("--require-driver", action="store_true",
                         help="Also require host driver libraries, for a GPU runtime check")
+    parser.add_argument("--cuda-only", action="store_true",
+                        help="Check the NVIDIA runtime; report the inactive Kitchen HIP backend separately")
     arguments = parser.parse_args()
     roots = [path.resolve() for path in arguments.root]
     for root in roots:
         if not root.is_dir():
             parser.error(f"Runtime directory does not exist: {root}")
-    report = check(roots, arguments.require_driver)
+    report = check(roots, arguments.require_driver, arguments.cuda_only)
     print(json.dumps(report, sort_keys=True))
     return 0 if report["status"] == "passed" else 1
 

@@ -42,6 +42,51 @@ class ReleaseChecks(unittest.TestCase):
         with self.assertRaisesRegex(checker.ReleaseError, "pinned"):
             checker.check_release(self.root)
 
+    def test_launch_rejects_manual_password_and_capacity_requirements(self):
+        path = self.root / "deploy/pod-template.json"
+        original = json.loads(path.read_text())
+        for variable, value in (("MOSS_PASSWORD", ""), ("JUPYTER_PASSWORD", "shared-token"), ("MOSS_VOLUME_GB", "60")):
+            with self.subTest(variable=variable):
+                pod = {**original, "env": {**original["env"], variable: value}}
+                path.write_text(json.dumps(pod))
+                with self.assertRaisesRegex(checker.ReleaseError, "manual password, token or volume-size"):
+                    checker.check_deployment(self.root)
+
+    def test_native_connection_requires_platform_token_and_matching_port(self):
+        path = self.root / "deploy/pod-console.json"
+        original = json.loads(path.read_text())
+        for changes, message in (({"startJupyter": False}, "Native Connect token"),
+                                 ({"portsConfig": [{"name": "MOSS ComfyUI", "port": 8188}]}, "label port 8888")):
+            with self.subTest(changes=changes):
+                path.write_text(json.dumps({**original, **changes}))
+                with self.assertRaisesRegex(checker.ReleaseError, message):
+                    checker.check_deployment(self.root)
+
+    def test_first_use_disk_and_explicit_startup_are_required(self):
+        path = self.root / "deploy/pod-template.json"
+        original = json.loads(path.read_text())
+        for changes, message in (({"containerDiskInGb": 40}, "60 GB first-use disk"),
+                                 ({"dockerStartCmd": []}, "baked startup script"),
+                                 ({"dockerEntrypoint": ["bash"]}, "retain the image entry point")):
+            with self.subTest(changes=changes):
+                path.write_text(json.dumps({**original, **changes}))
+                with self.assertRaisesRegex(checker.ReleaseError, message):
+                    checker.check_deployment(self.root)
+
+    def test_staging_tag_cannot_reuse_a_historical_gpu_report(self):
+        pod = checker.read_json(self.root / "deploy/pod-template.json")
+        pod["imageName"] = "ghcr.io/example-maintainer/moss-comfyui:staging"
+        with self.assertRaisesRegex(checker.ReleaseError, "immutable digest"):
+            checker.check_gpu_report(self.root, pod)
+
+    def test_different_immutable_image_cannot_reuse_a_gpu_report(self):
+        pod = checker.read_json(self.root / "deploy/pod-template.json")
+        report = checker.read_json(self.root / "docs/validation.json")
+        different = "0" * 64 if report["image_digest"][7:] != "0" * 64 else "1" * 64
+        pod["imageName"] = "ghcr.io/example-maintainer/moss-comfyui@sha256:" + different
+        with self.assertRaisesRegex(checker.ReleaseError, "differs from the GPU-tested digest"):
+            checker.check_gpu_report(self.root, pod)
+
     def test_publish_refuses_placeholder_registry(self):
         path = self.root / 'deploy/pod-template.json'
         pod = json.loads(path.read_text())

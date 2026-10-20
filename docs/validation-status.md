@@ -1,10 +1,18 @@
-# Release validation — 2026-10-19
+# Validation status — 2026-10-20
+
+## 0.1.1 simplified-launch candidate
+
+The candidate has passed 79 CPU/source checks after the image-build repair and a headless Chrome token/session test using two TLS origins. The final image build and in-image checks, actual Runpod Connect deployment, new GPU jobs and restart preservation remain pending. No candidate image has been promoted or substituted into the public template. See [candidate details](simple-launch.md).
+
+The report below and [`validation.json`](validation.json) apply only to published 0.1.0. They are not evidence for 0.1.1.
+
+## 0.1.0 validation — 2026-10-19
 
 The completed [publication report](validation.json) records the tested runtime
-and image. `python scripts/check_release.py --publish` passes. Image `0.1.0`
+and image. The publication check passed for that release. Image `0.1.0`
 is public and resolves to the tested digest below. The tested Pod template is
-public and the GitHub `v0.1.0` release is published. Hub accepted the submission
-and queued the release build; its automated tests and manual approval remain
+public and the GitHub `v0.1.0` release is published. Hub accepted the submission, but its first build was reported failed on
+2026-10-20. No Hub tests ran and the listing is not approved. Replacement release validation and manual approval remain
 pending.
 
 | Check | Result |

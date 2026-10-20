@@ -12,9 +12,11 @@ LABEL org.opencontainers.image.title="MOSS Image Studio" \
       org.opencontainers.image.version=$VERSION \
       org.opencontainers.image.licenses="MIT"
 
+# Include the small RDMA/MPI runtimes linked by the pinned NVIDIA wheels.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nginx openssh-server tini curl ca-certificates git \
         gcc libc6-dev libstdc++6 libgomp1 \
+        libibverbs1 ibverbs-providers librdmacm1 libopenmpi3 libpmix2 libfabric1 libucx0 \
     && rm -rf /var/lib/apt/lists/* \
     && rm -f /etc/ssh/ssh_host_* \
     && mkdir -p /run/sshd \
@@ -56,7 +58,7 @@ RUN python3.11 -m venv /opt/venv \
     && /opt/venv/bin/python -m pip install --no-cache-dir --no-compile --only-binary=:all: \
         --require-hashes -r /opt/moss/requirements/runtime.lock
 COPY scripts/check_native_dependencies.py /opt/moss/scripts/check_native_dependencies.py
-RUN /opt/venv/bin/python /opt/moss/scripts/check_native_dependencies.py --root /opt/venv \
+RUN /opt/venv/bin/python /opt/moss/scripts/check_native_dependencies.py --root /opt/venv --cuda-only \
     && /opt/venv/bin/python -c 'from pathlib import Path; import sysconfig; from triton import knobs; assert (Path(sysconfig.get_paths()["include"]) / "Python.h").is_file(); print("Triton ptxas:", knobs.nvidia.ptxas.path)'
 RUN git init --quiet /opt/comfyui \
     && git -C /opt/comfyui remote add origin https://github.com/Comfy-Org/ComfyUI.git \

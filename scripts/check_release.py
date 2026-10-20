@@ -18,7 +18,7 @@ Validation report schema (no prompts, credentials, pod IDs, or image files):
   serverless: {fresh_worker: true, jobs: [the same three preset records]}
 Each job: {preset: string, completed: true, width: integer, height: integer,
            image_sha256: 64 hexadecimal characters}.
-If the Pod template names an image by digest, it must match image_digest.
+Publication requires the Pod image to name that exact immutable digest.
 """
 
 from __future__ import annotations
@@ -36,10 +36,10 @@ PRESETS = {"photography", "fast", "img2img"}
 REQUIRED = (
     "Dockerfile", "handler.py", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
     ".dockerignore", ".runpod/hub.json", ".runpod/tests.json", ".runpod/README.md",
-    "deploy/pod-template.json", "docs/release.md", "config/models.json",
+    "deploy/pod-template.json", "deploy/pod-console.json", "docs/release.md", "config/models.json",
     "config/workflows.json", "requirements/runtime.lock",
     "src/moss_runtime/bootstrap.py", "src/moss_runtime/jobs.py",
-    "custom_nodes/moss/__init__.py",
+    "custom_nodes/moss/__init__.py", "scripts/entrypoint.sh",
 )
 HEX40 = re.compile(r"[0-9a-f]{40}")
 HEX64 = re.compile(r"[0-9a-f]{64}")
@@ -192,11 +192,18 @@ def check_deployment(root):
     require(tests.get("config", {}).get("gpuCount") == 1 and tests["config"].get("allowedCudaVersions") == ["13.0"], "Hub test hardware settings are inconsistent")
     pod = read_json(root / "deploy/pod-template.json")
     require(pod.get("category") == "NVIDIA" and pod.get("isServerless") is False, "Pod template must select NVIDIA Pod mode")
-    require(pod.get("containerDiskInGb") == 40 and pod.get("volumeInGb") == 60 and pod.get("volumeMountPath") == "/workspace", "Pod storage settings are inconsistent")
-    require(set(pod.get("ports", [])) == {"8188/http", "22/tcp"}, "Pod must expose only its gateway and SSH")
-    require(pod.get("env", {}).get("MOSS_MODE") == "pod" and pod["env"].get("MOSS_PASSWORD") == "", "Pod password must be configured separately by each user")
-    require(pod.get("dockerEntrypoint") == [] and pod.get("dockerStartCmd") == [], "Pod must retain the image startup")
+    require(pod.get("containerDiskInGb") == 60 and pod.get("volumeInGb") == 60 and pod.get("volumeMountPath") == "/workspace", "Pod needs 60 GB first-use disk and the optional workspace volume setting")
+    require(set(pod.get("ports", [])) == {"8888/http", "22/tcp"}, "Pod must expose native Connect on 8888 and SSH")
+    require(pod.get("env") == {"MOSS_MODE": "pod"}, "Pod launch must not require a manual password, token or volume-size variable")
+    require(pod.get("dockerEntrypoint") == [] and pod.get("dockerStartCmd") == ["/opt/moss/scripts/entrypoint.sh"], "Pod must explicitly select the baked startup script and retain the image entry point")
     require(isinstance(pod.get("imageName"), str) and pod["imageName"], "Pod image identity is missing")
+    require(type(pod.get("isPublic")) is bool, "Pod visibility must be explicit")
+    console = read_json(root / "deploy/pod-console.json")
+    require(console.get("startJupyter") is True and console.get("startSsh") is True,
+            "Native Connect token and Runpod SSH must be enabled")
+    require(console.get("allowedCudaVersions") == ["13.0"], "Pod host must support CUDA 13.0")
+    require(console.get("portsConfig") == [{"name": "MOSS ComfyUI", "port": 8888}],
+            "Native Connect must label port 8888 as MOSS ComfyUI")
     return pod
 
 
@@ -206,8 +213,8 @@ def check_gpu_report(root, pod):
     require(isinstance(report.get("source_revision"), str) and HEX40.fullmatch(report["source_revision"]), "GPU report needs the tested source commit")
     digest = report.get("image_digest", "")
     require(isinstance(digest, str) and digest.startswith("sha256:") and HEX64.fullmatch(digest[7:]), "GPU report needs the tested image digest")
-    if "@sha256:" in pod["imageName"]:
-        require(pod["imageName"].split("@", 1)[1] == digest, "Pod image differs from the GPU-tested digest")
+    require("@sha256:" in pod["imageName"], "Publication requires a Pod image pinned to the GPU-tested immutable digest")
+    require(pod["imageName"].split("@", 1)[1] == digest, "Pod image differs from the GPU-tested digest")
     try:
         timestamp = datetime.fromisoformat(report["validated_at"].replace("Z", "+00:00"))
         require(timestamp.tzinfo is not None, "GPU validation timestamp must include a timezone")

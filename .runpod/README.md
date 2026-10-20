@@ -1,8 +1,10 @@
 # MOSS-Image SFT API
 
+> The 0.1.1 simplified Pod launch is a candidate. The completed results below apply to published 0.1.0; candidate image/GPU validation and publication remain pending.
+
 Generate images with three presets: `photography` (SFT BF16 and full VAE), `fast` (SFT INT8 and small VAE), and experimental latent `img2img`. This Hub listing uses Runpod's queue-based Serverless API. For the interactive ComfyUI browser, use the separate Pod template described in the repository README.
 
-**Release validation — 2026-10-19:** image `0.1.0` passes all three queue presets, an optional second-LoRA variant, and empty-prompt rejection; the four returned images were inspected. Pod GPU generation, all four browser workflows, prompt enhancement, authentication/WebSocket checks, restart preservation, and post-restart health checks also pass. Hub submission is accepted; Runpod build/tests and manual approval are pending. See the repository's validation record for the exact scope.
+**Release validation — 2026-10-19:** image `0.1.0` passes all three queue presets, an optional second-LoRA variant, and empty-prompt rejection; the four returned images were inspected. Pod GPU generation, all four browser workflows, prompt enhancement, authentication/WebSocket checks, restart preservation, and post-restart health checks also pass. Hub accepted the submission, but its first build is reported failed. The listing is not approved; a replacement release is being prepared. See the repository's validation record for the exact scope.
 
 Use one 24 GB NVIDIA GPU with a CUDA 13.0-compatible host and 60 GB container disk. Initial startup downloads and verifies 23.51 GB of public model files; no model-download token is required. For a persistent network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss` to retain the model cache across worker replacements. Job files and databases stay in separate temporary workspaces per worker.
 
@@ -28,7 +30,7 @@ A nonempty prompt is required. Once the Hub listing is approved, deploy it to cr
 
 For img2img, supply `image_base64` containing raw base64 PNG, JPEG, or WebP bytes, without a data-URI prefix or URL. The API resizes/center-crops to `width` and `height` (default 1024×1024), with denoise 0.6. The browser graph's approximately 1 MP aspect-preserving behavior is separate. Use at most 7 MiB of decoded image bytes so the encoded request fits Runpod's asynchronous request-size limit.
 
-The worker runs with `MOSS_MODE=serverless`. The Pod mode uses `MOSS_MODE=pod`, port 8188, and a user-configured `MOSS_PASSWORD` of at least 12 characters for the `moss` login. No password is needed for the Serverless worker; use Runpod API authentication.
+The worker runs with `MOSS_MODE=serverless` and uses Runpod API authentication. The separate 0.1.1 Pod candidate uses `MOSS_MODE=pod` and **Connect → MOSS ComfyUI** on port 8888, with Runpod supplying the connection token automatically. The published 0.1.0 Pod template retains its earlier port-8188 password setup until the candidate passes its own deployment checks.
 
 The Pod gateway derives its standard Runpod public origin automatically. Custom domains can set `MOSS_PUBLIC_ORIGIN` to the exact HTTP(S) origin, without a path.
 

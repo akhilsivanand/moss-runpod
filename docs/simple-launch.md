@@ -1,25 +1,35 @@
-# Simplified launch candidate
+# Simplified launch — 0.1.1 candidate
 
-This branch prepares a simpler ComfyUI launch. It is not the published `0.1.0` image or a completed GPU validation report.
+The intended user flow is **Deploy → Connect → choose a workflow**. Runpod's Connect link supplies its platform-issued access token. Users do not create or copy a separate MOSS password. The preparation page shows startup phases, downloaded GB and percentage until the workflows are ready.
 
-The intended user flow is **Deploy → Connect → choose a workflow**. Runpod's Connect button supplies its platform-issued access token; users do not create or copy a separate MOSS password. The service shows preparation phases, downloaded GB, and percentage until the workflows are ready.
+The public template still runs validated `0.1.0`. This branch is a private candidate; it is not a published replacement or a completed GPU validation report.
 
-## Connection
+## Startup and connection
 
-The candidate uses the native token-bearing Connect link on port 8888, labeled **MOSS ComfyUI**. The template enables Runpod's Jupyter token setting, while the image suppresses the actual Jupyter server and serves MOSS instead. Valid launch tokens become secure, HTTP-only browser sessions and are removed from the URL. The existing explicit-password and Serverless interfaces remain supported.
+The startup script is [`scripts/entrypoint.sh`](../scripts/entrypoint.sh), baked into the image as `/opt/moss/scripts/entrypoint.sh`. Both the image's `CMD` and the candidate template's explicit start command select it. The image retains `/usr/bin/tini --` as its entry point so signals and child processes are handled correctly. No external startup-script download is required.
 
-This requires verification of the actual platform-issued token during an isolated deployment. The public template must remain on the validated release until that check passes. No shared password or public setup token belongs in the template.
+The script initializes Runpod SSH, starts the gateway before downloading models, prepares the six pinned model files, and supervises ComfyUI. The candidate uses port **8888**, labeled **MOSS ComfyUI**. [Console metadata](../deploy/pod-console.json) enables the native token-bearing connection link; the [template](../deploy/pod-template.json) does not contain a shared token or password.
+
+Runpod provides its token through the native Jupyter setting. The image prevents a separate Jupyter server from competing for port 8888 and serves MOSS there. A valid connection token becomes a secure, HTTP-only browser session and is removed from the URL. Existing explicit-password deployments and the Serverless API remain supported.
 
 ## Storage
 
-A 60 GB container disk provides room for the model files without requiring a storage edit before first use. Templates can also request a 60 GB persistent volume at `/workspace`, but the current Runpod workload-first launch screen selects storage independently and can launch with no attached volume.
+A 60 GB container disk provides room for the models without requiring a storage edit before first use. The template also requests a 60 GB volume at `/workspace`, but the current Runpod workload-first launch screen chooses persistent storage separately and can launch without that attachment.
 
-Persistent storage is an optional Runpod setting for users who want models and images retained after stopping. Documentation must distinguish that choice from starting the UI; it must not promise retention for a launch with no persistent attachment. Existing files and edited workflows remain protected when a volume is attached.
+Users who want models and images retained after stopping or replacing a Pod must select persistent storage in Runpod Storage. A template volume field alone does not establish that retention. Attached data keeps models, edited workflows and images outside the baked application under `/opt`.
 
-## Validation before publication
+## Candidate validation
 
-- Validate native token exchange, clean URLs, browser session security, authenticated HTTP and WebSocket traffic, foreign-origin rejection, and native readiness polling.
-- Build the candidate and pass the in-image dependency and actual ComfyUI CPU checks.
-- Verify the platform-generated token and Connect button through a fresh task-owned deployment; observe only new validation jobs, never user logs or history.
-- Keep the user's stopped Pod untouched. Retire any task-owned validation resources after the checks.
-- Record the candidate's own source and image identities before replacing the public template or publishing a new release.
+| Check | Status |
+|---|---|
+| CPU/source checks | 79 passed after the image-build repair |
+| Headless Chrome token/session test | Passed with two TLS origins; authenticated HTTP/WebSocket, clean URL and foreign-origin checks passed |
+| Final image build and in-image CPU checks | Pending |
+| Fresh task-owned GPU Pod and platform-issued Connect token | Pending |
+| New generation and restart preservation | Pending |
+| Candidate report and immutable image promotion | Pending |
+| Public template update and 0.1.1 release | Pending |
+
+The browser test verifies the application protocol; it does not establish that a deployed Runpod Connect button supplies the expected token. Verify that separately on a fresh task-owned Pod. Observe only its new test jobs and outputs, never user logs or history. Leave the user's stopped Pod untouched.
+
+[`validation.json`](validation.json) remains the historical `0.1.0` report. It must not be reused as proof for this candidate. Publication requires evidence for the exact new source and immutable image digest.

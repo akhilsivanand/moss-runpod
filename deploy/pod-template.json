@@ -1,22 +1,22 @@
 {
-  "name": "MOSS-Image SFT ComfyUI",
+  "name": "MOSS-Image SFT ComfyUI — simplified launch candidate",
   "category": "NVIDIA",
-  "imageName": "ghcr.io/akhilsivanand/moss-comfyui@sha256:4247e93d9fee317243f23713b5e55ec44e05f23a0cb41388599183b8789603ec",
-  "containerDiskInGb": 40,
+  "imageName": "ghcr.io/akhilsivanand/moss-comfyui:staging-88f9bf57f54c42c68fb1ebeccad5e96c1c213733",
+  "containerDiskInGb": 60,
   "volumeInGb": 60,
   "volumeMountPath": "/workspace",
   "ports": [
-    "8188/http",
+    "8888/http",
     "22/tcp"
   ],
   "dockerEntrypoint": [],
-  "dockerStartCmd": [],
+  "dockerStartCmd": [
+    "/opt/moss/scripts/entrypoint.sh"
+  ],
   "env": {
-    "MOSS_MODE": "pod",
-    "MOSS_PASSWORD": "",
-    "MOSS_VOLUME_GB": "60"
+    "MOSS_MODE": "pod"
   },
-  "isPublic": true,
+  "isPublic": false,
   "isServerless": false,
-  "readme": "# MOSS-Image SFT ComfyUI\n\nFour browser workflows: BF16 photography, INT8 with two LoRA slots, experimental latent img2img, and the official prompt-enhanced graph. The same image supports the separate Runpod Hub queue API.\n\n## Deploy\n\nUse one NVIDIA GPU with at least 24 GB VRAM and a CUDA 13.0-compatible host. Set your own MOSS_PASSWORD of at least 12 characters before starting; login user is moss and there is no default password. Prefer a Runpod Secret. Keep the image entry point and start command unchanged.\n\nOpen HTTP port 8188 for preparation progress and protected ComfyUI. The landing page links all four native workflows. For photography open /?template=photography-bf16&source=moss. Port 22 uses your Runpod SSH key.\n\nFirst startup downloads and verifies 23.51 GB of public models; no Hugging Face token is required. Preparation is not instant. The template provides 40 GB container disk and a 60 GB volume at /workspace. Retain the volume to preserve models, edited workflows, inputs and outputs. MOSS_VOLUME_GB=60 must match the provisioned volume size; update it when resizing.\n\nApplication files are baked under /opt/moss, /opt/comfyui and /opt/venv. Mutable data is under /workspace/moss, so a workspace mount does not hide the application. Restarts reuse verified models and preserve edited workflows.\n\nThe gateway derives the standard Runpod public origin automatically. For a custom domain, set MOSS_PUBLIC_ORIGIN to its exact HTTP(S) origin, including a nondefault port if needed and no path.\n\n## Verified release\n\nVersion 0.1.0 pins the tested image digest. Three core presets passed on a fresh GPU Pod and queue worker; the optional API LoRA slot, actual prompt-enhanced browser generation, four native workflow imports, authenticated HTTP/WebSocket transport and restart preservation passed. Checks establish execution and persistence, not an aesthetic-quality guarantee.\n\nREADME, API inputs, validation and upstream licenses: https://github.com/akhilsivanand/moss-runpod\n"
+  "readme": "# MOSS-Image SFT ComfyUI\n\nDeploy a Pod, open **Connect → MOSS ComfyUI**, and choose one of the four bundled workflows. Runpod supplies the connection token; there is no separate MOSS password to create.\n\nFirst launch downloads and verifies **23.51 GB** of public models. The connection page shows preparation progress and opens the workflows when ready. No Hugging Face token or terminal command is required.\n\nUse one NVIDIA GPU with at least 24 GB VRAM and a CUDA 13.0-compatible host. The candidate requests a 60 GB container disk so first use needs no storage edit. Select persistent storage mounted at `/workspace` if you want to retain models, edited workflows and images when stopping or replacing the Pod; the current launch screen chooses storage separately from the template.\n\n## Startup script\n\nThe image includes `/opt/moss/scripts/entrypoint.sh`. The template explicitly runs that command through the image's `tini` entry point. It initializes Runpod SSH, prepares the models, starts the protected connection page, and supervises ComfyUI. Do not replace it with a model-download command.\n\n## Candidate status\n\nThis is the private 0.1.1 simplified-launch candidate. The public template still uses validated 0.1.0. Candidate source/browser checks have passed; its built-image, fresh GPU deployment, native Runpod Connect and restart checks are pending. Do not publish until those checks pass for the exact candidate digest.\n\nWorkflows, API documentation and licenses: https://github.com/akhilsivanand/moss-runpod\n"
 }
