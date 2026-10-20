@@ -108,6 +108,6 @@ docs/                         Release procedure and dated validation evidence
 
 ComfyUI is exposed through the authenticated **8888** gateway; Runpod SSH uses port 22. The internal ComfyUI service remains private. Standard Runpod origins are derived automatically.
 
-The tested `0.1.2` image passed fresh GPU presets, all four native workflow imports, prompt enhancement, browser Run-button generation, queue API checks and restart preservation. Exact evidence is recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). Publication of the corrected image/template and GitHub release remains pending. The [release procedure](docs/release.md) separates publication from Runpod Hub approval.
+The tested `0.1.2` image passed fresh GPU presets, all four native workflow imports, prompt enhancement, browser Run-button generation, queue API checks and restart preservation. Exact evidence is recorded in [validation status](docs/validation-status.md) and [validation.json](docs/validation.json). The stable image and public Pod template use this tested version. Versioned source archives and public reports are distributed through [GitHub releases](https://github.com/akhilsivanand/moss-runpod/releases). The [release procedure](docs/release.md) separates publication from Runpod Hub approval.
 
 Packaging code is [MIT licensed](LICENSE). Model weights, ComfyUI and upstream workflows retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.txt).

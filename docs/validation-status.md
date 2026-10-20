@@ -8,7 +8,7 @@ Runtime source is `a14d011be32b86447a06c88531f0c334b9b86f08`; the exact image is
 ghcr.io/akhilsivanand/moss-comfyui@sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671
 ```
 
-Fresh Pod generation, native browser, prompt enhancement and restart checks passed on the corrected image. Publication of the corrected release is pending, and Hub submission is held. The historical [0.1.0](validation-0.1.0.json) and [0.1.1](validation-0.1.1.json) reports remain separate evidence for their earlier runtimes.
+Fresh Pod generation, native browser, prompt enhancement and restart checks passed on the corrected image. The stable 0.1.2 image and corrected public Pod template are published and verified. Hub submission remains held until GitHub release verification. The historical [0.1.0](validation-0.1.0.json) and [0.1.1](validation-0.1.1.json) reports remain separate evidence for their earlier runtimes.
 
 | Check | 0.1.2 result |
 |---|---|
@@ -30,8 +30,8 @@ Fresh Pod generation, native browser, prompt enhancement and restart checks pass
 | API runtime evidence | SDK 1.12.0; package version 0.1.2; actual worker image matched the exact digest; RTX 4090 observed |
 | API configuration | Observed 60 GB ephemeral disk, no persistent volume, min 0/max 1/idle 30 and CUDA host minimum 13.0 |
 | Disposable API cleanup | Endpoint/source template deleted and 404 verified; existing published API resources unchanged |
-| Stable 0.1.2 tag and public Pod template | Pending promotion and recorded verification |
-| GitHub v0.1.2 release | Pending packaging, publication and public-asset verification |
+| Stable 0.1.2 tag and public Pod template | Tested manifest promoted without rebuilding; anonymous digest identity and template image/start command/native Connect/storage/README readback verified |
+| GitHub v0.1.2 release | Versioned archive/report packaging; public-asset verification is recorded after upload |
 | Runpod Hub | Submission held; build, test and external approval not established |
 
 ## Layout preservation scope

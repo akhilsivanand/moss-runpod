@@ -4,7 +4,7 @@ Generate images through Runpod's **Serverless queue API** with BF16 `photography
 
 Version **0.1.2** corrects the Pod layout to `/workspace/ComfyUI`. Upload compatible browser LoRAs to **`/workspace/ComfyUI/models/loras`** (plural). `/opt/comfyui/models` points to the same model tree, so the installed application's `models/loras` path sees those files too. Refresh the model list or reload the editor after an upload. API adapters also need to be in the deployment's approved catalog.
 
-Deploy an available Hub listing to create your own API endpoint. Use one supported NVIDIA GPU with at least 24 GB VRAM and a **60 GB container disk**. The worker runs with `MOSS_MODE=serverless` and Runpod API authentication. No model-download token is required. Runtime validation has passed; publication of the corrected release is pending, and Hub submission remains held until publication verification.
+Deploy an available Hub listing to create your own API endpoint. Use one supported NVIDIA GPU with at least 24 GB VRAM and a **60 GB container disk**. The worker runs with `MOSS_MODE=serverless` and Runpod API authentication. No model-download token is required. Runtime validation has passed, and the corrected image and ComfyUI Pod template are published. Hub availability requires its separate build, tests and external review.
 
 Send this body to `https://api.runpod.ai/v2/ENDPOINT_ID/run`, with `Authorization: Bearer YOUR_RUNPOD_API_KEY` and `Content-Type: application/json`:
 

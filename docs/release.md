@@ -1,6 +1,6 @@
 # Releasing MOSS-Image 0.1.2
 
-Version 0.1.2 corrects the Pod workspace to `/workspace/ComfyUI`, exposes `models/loras` where users expect it and aliases the installed application's model directory to that same tree. One image serves the authenticated ComfyUI Pod and the separate Serverless queue API. Runtime validation has passed. Publication is pending; Hub submission remains held until publication verification.
+Version 0.1.2 corrects the Pod workspace to `/workspace/ComfyUI`, exposes `models/loras` where users expect it and aliases the installed application's model directory to that same tree. One image serves the authenticated ComfyUI Pod and the separate Serverless queue API. Runtime validation has passed. The stable image and public Pod template are published and independently verified; Hub submission remains held until the GitHub release assets are verified.
 
 ## Package and image
 

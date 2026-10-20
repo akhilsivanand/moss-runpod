@@ -390,7 +390,23 @@
     "actual_no_volume_gpu_pod_tested": false
   },
   "publication_checks": {
-    "status": "pending_recorded_verification",
+    "status": "runtime_image_and_pod_template_verified",
+    "stable_image": {
+      "version": "0.1.2",
+      "same_manifest_digest": true,
+      "anonymous_verification_passed": true,
+      "promotion_workflow_run": 39425943363,
+      "rebuild_performed": false
+    },
+    "public_template": {
+      "immutable_image_matches": true,
+      "native_connection_enabled": true,
+      "explicit_start_command_verified": true,
+      "storage_settings_verified": true,
+      "readme_verified": true,
+      "registry_credentials_absent": true,
+      "verification": "normal maintainer save, independent GraphQL account readback and REST readback"
+    },
     "hub_submission": "held"
   },
   "limits": [
