@@ -6,7 +6,7 @@ FROM runpod/base@sha256:b635f96e8e24b75a4a3ff2132b8043dd4c4651f75775a4f1a670d8e4
 FROM python@sha256:8a00ecb83ed9d0864dfd102a1bdb2067fda907ceb30bb86d09da9ee558b19590
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ARG COMFY_COMMIT=63be2f9b82ad0dac88a7ceaa28a9cf3154125a18
-ARG VERSION=0.1.1
+ARG VERSION=0.1.2
 LABEL org.opencontainers.image.title="MOSS Image Studio" \
       org.opencontainers.image.description="Curated MOSS-Image workflows for ComfyUI and the Runpod Hub" \
       org.opencontainers.image.version=$VERSION \
@@ -86,7 +86,7 @@ ENV NVIDIA_VISIBLE_DEVICES=all \
     PYTHONUNBUFFERED=1 \
     MOSS_ROOT=/opt/moss \
     COMFY_ROOT=/opt/comfyui \
-    MOSS_DATA_DIR=/workspace/moss \
+    MOSS_DATA_DIR=/workspace/ComfyUI \
     MOSS_MODE=pod \
     COMFY_URL=http://127.0.0.1:8189
 WORKDIR /opt/moss

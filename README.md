@@ -69,17 +69,23 @@ API img2img center-crops/resizes to the requested dimensions, defaulting to 1024
 
 A cold API worker downloads the same model files. Two validated cold requests had **326 and 336 seconds of queue delay** before execution. Replacement workers can download them again; these observations are not a startup guarantee. Use asynchronous `/run` for long requests. Generation has a 600-second worker timeout after preparation; the Hub cold test allows 1,200,000 ms.
 
+## Add LoRAs
+
+Put compatible MOSS-Image SFT adapters in **`/workspace/ComfyUI/models/loras/`**, then refresh ComfyUI's model list and choose the file in a LoRA loader. The folder name is `loras` (plural). The installed application's `/opt/comfyui/models` points to the same persistent model tree, so uploads there are visible too.
+
+Version 0.1.2 moves the earlier `/workspace/moss` workspace to `/workspace/ComfyUI` without downloading the models again. Existing files are preserved; conflicting destinations stop migration without replacement. This layout update is being validated before publication.
+
 ## Keep models and images
 
 The template requests a **60 GB container disk**, sufficient for first use without a persistent attachment. To retain models, workflows and images after stopping the Pod, select persistent storage mounted at `/workspace` in Runpod Storage. The current launch screen selects storage separately, so the legacy template volume field alone does not guarantee retention. Preserve the volume when stopping; replacing or deleting a Pod requires storage that outlives that Pod.
 
-For a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/moss`. Workers can share the verified model cache while keeping databases and job files in separate temporary workspaces. Shared-cache concurrency has not been validated for this release.
+For a Serverless network volume mounted at `/runpod-volume`, set `MOSS_DATA_DIR=/runpod-volume/ComfyUI`. Workers can share the verified model cache while keeping databases and job files in separate temporary workspaces. Shared-cache concurrency has not been validated for this release.
 
 ## Startup and package layout
 
 The startup script is included in the image at **`/opt/moss/scripts/entrypoint.sh`** and explicitly selected in the template's start-command field. It initializes Runpod SSH, starts the connection/progress page, prepares models and supervises ComfyUI. No external startup-script download is required. The image retains `tini` for process supervision.
 
-Application files live under `/opt/moss`, ComfyUI under `/opt/comfyui` and Python under `/opt/venv`. Mutable Pod data lives under `/workspace/moss/{models,input,output,user,temp,state}`; mounting a workspace does not hide the installed application.
+Application files live under `/opt/moss`, ComfyUI under `/opt/comfyui` and Python under `/opt/venv`. Mutable Pod data lives under `/workspace/ComfyUI/{models,input,output,user,temp,state}`; mounting a workspace does not hide the installed application.
 
 ```text
 Dockerfile / handler.py        Container build and queue SDK entry point
@@ -97,7 +103,7 @@ docs/                         Release procedure and dated validation evidence
 | `MOSS_MODE` | `pod` for ComfyUI; `serverless` for queue jobs |
 | `JUPYTER_PASSWORD` | Runpod supplies the native Connect token automatically |
 | `MOSS_PASSWORD` | Optional legacy/custom login; use a unique password of at least 12 characters |
-| `MOSS_DATA_DIR` | Mutable root; defaults to `/workspace/moss` |
+| `MOSS_DATA_DIR` | Mutable root; defaults to `/workspace/ComfyUI` |
 | `MOSS_PUBLIC_ORIGIN` | Optional exact HTTP(S) origin for a custom domain, without a path |
 
 ComfyUI is exposed through the authenticated **8888** gateway; Runpod SSH uses port 22. The internal ComfyUI service remains private. Standard Runpod origins are derived automatically.

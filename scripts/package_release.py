@@ -6,7 +6,7 @@ rooted at moss-runpod/, and use fixed timestamps and permissions. The output mus
 be outside this repository. A canonical docs/validation.json is included only if
 it satisfies the release checker's public GPU report schema; other local JSON
 reports and private validation artifacts are excluded. The explicitly archived
-0.1.0 public report is retained for the documentation links.
+0.1.0 and 0.1.1 public reports are retained for the documentation links.
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ import tempfile
 import zipfile
 
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 ROOT_FILES = {
     "Dockerfile", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
     ".dockerignore", ".gitignore", "handler.py", "pyproject.toml",
@@ -72,7 +72,7 @@ def public_files(root, include_validation=False):
             allowed = path.suffix in {".yml", ".yaml"}
         if relative.as_posix() == "docs/validation.json":
             allowed = include_validation
-        if relative.as_posix() == "docs/validation-0.1.0.json":
+        if relative.as_posix() in {"docs/validation-0.1.0.json", "docs/validation-0.1.1.json"}:
             allowed = True
         if allowed:
             yield path, relative

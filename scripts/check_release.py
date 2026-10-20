@@ -8,6 +8,7 @@ checker verifies report structure and consistency, not the truth of a claim.
 
 Validation report schema (no prompts, credentials, pod IDs, or image files):
   schema_version: 1
+  package_version: exact pyproject.toml version
   source_revision: 40-character Git commit
   image_digest: sha256:<64 hexadecimal characters>
   validated_at: ISO 8601 timestamp with timezone
@@ -29,6 +30,7 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import sys
+import tomllib
 from urllib.parse import urlsplit
 
 
@@ -215,6 +217,8 @@ def check_gpu_report(root, pod):
     require(isinstance(digest, str) and digest.startswith("sha256:") and HEX64.fullmatch(digest[7:]), "GPU report needs the tested image digest")
     require("@sha256:" in pod["imageName"], "Publication requires a Pod image pinned to the GPU-tested immutable digest")
     require(pod["imageName"].split("@", 1)[1] == digest, "Pod image differs from the GPU-tested digest")
+    version = tomllib.loads((root / "pyproject.toml").read_text())["project"]["version"]
+    require(report.get("package_version") == version, "GPU report package version differs from this release")
     try:
         timestamp = datetime.fromisoformat(report["validated_at"].replace("Z", "+00:00"))
         require(timestamp.tzinfo is not None, "GPU validation timestamp must include a timezone")

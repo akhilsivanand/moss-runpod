@@ -233,7 +233,7 @@ def main() -> None:
                         help="Explicitly authorize submitting the three GPU jobs")
     args = parser.parse_args()
     root = Path(os.environ.get("MOSS_ROOT", SOURCE_ROOT)).resolve()
-    data_dir = Path(os.environ.get("MOSS_DATA_DIR", "/workspace/moss")).resolve()
+    data_dir = Path(os.environ.get("MOSS_DATA_DIR", "/workspace/ComfyUI")).resolve()
     load_catalog(root)
     if not args.run:
         print(json.dumps({

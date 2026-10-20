@@ -1,5 +1,7 @@
 # Validation status — 2026-10-20
 
+**0.1.2 layout correction is being validated.** New Pods will use `/workspace/ComfyUI/models/loras`, with the installed application pointing to the same model tree. Existing model weights and user data must be preserved. The completed checks below describe 0.1.1; they do not validate the changed runtime. Hub submission is held until the correction passes its own checks.
+
 Release 0.1.1 uses runtime source `0bf51872c7b9350a40f96cd8295d318bcef8b181` and the tested immutable image:
 
 ```text

@@ -214,7 +214,7 @@ class ComfyJobRunner:
     def __init__(self, comfy_url: str | None = None, data_dir: Path | None = None,
                  root: Path | None = None, timeout: float = 600):
         self.root = Path(root) if root is not None else _root()
-        self.data_dir = Path(data_dir or os.environ.get("MOSS_DATA_DIR", "/workspace/moss"))
+        self.data_dir = Path(data_dir or os.environ.get("MOSS_DATA_DIR", "/workspace/ComfyUI"))
         self.comfy_url = (comfy_url or os.environ.get("COMFY_URL", "http://127.0.0.1:8189")).rstrip("/")
         parts = urlsplit(self.comfy_url)
         if parts.scheme not in {"http", "https"} or not parts.hostname or parts.username or parts.password or parts.query or parts.fragment:

@@ -15,6 +15,7 @@ from aiohttp import web
 from . import __version__
 from .assets import prepare_models
 from .gateway import auth_from_environment, create_app
+from .paths import DEFAULT_DATA_ROOT, LEGACY_DATA_ROOT, expose_persistent_models, migrate_legacy_workspace
 from .workflows import install_workflows, atomic_write
 
 
@@ -68,6 +69,8 @@ async def serve(root, comfy_root, data_root, mode):
         with tempfile.TemporaryDirectory(prefix='moss-worker-') as workspace:
             await serve_workspace(root, comfy_root, Path(workspace), mode, data_root)
     else:
+        if data_root == DEFAULT_DATA_ROOT:
+            await asyncio.to_thread(migrate_legacy_workspace, LEGACY_DATA_ROOT, data_root)
         await serve_workspace(root, comfy_root, data_root, mode, data_root)
 
 
@@ -92,6 +95,8 @@ async def serve_workspace(root, comfy_root, data_root, mode, model_data_root):
             await asyncio.to_thread(check_gpu)
             for name in ('models', 'input', 'output', 'temp', 'user', 'cache', 'custom_nodes'):
                 (data_root / name).mkdir(exist_ok=True)
+            if mode == 'pod':
+                await asyncio.to_thread(expose_persistent_models, comfy_root, data_root)
 
             def progress(update):
                 loop.call_soon_threadsafe(state.update, update)
@@ -162,7 +167,7 @@ def main():
     mode = os.environ.get('MOSS_MODE', 'pod')
     if mode not in ('pod', 'serverless'):
         raise RuntimeError('MOSS_MODE must be pod or serverless.')
-    asyncio.run(serve(root, comfy_root, Path(os.environ.get('MOSS_DATA_DIR', '/workspace/moss')).resolve(), mode))
+    asyncio.run(serve(root, comfy_root, Path(os.environ.get('MOSS_DATA_DIR', str(DEFAULT_DATA_ROOT))).resolve(), mode))
 
 
 if __name__ == '__main__':

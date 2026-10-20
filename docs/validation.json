@@ -389,5 +389,6 @@
       "promotion_workflow_run": 39417149680,
       "rebuild_performed": false
     }
-  }
+  },
+  "package_version": "0.1.1"
 }

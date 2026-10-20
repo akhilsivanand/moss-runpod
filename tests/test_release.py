@@ -87,6 +87,15 @@ class ReleaseChecks(unittest.TestCase):
         with self.assertRaisesRegex(checker.ReleaseError, "differs from the GPU-tested digest"):
             checker.check_gpu_report(self.root, pod)
 
+    def test_another_package_version_cannot_reuse_a_gpu_report(self):
+        path = self.root / "docs/validation.json"
+        report = checker.read_json(path)
+        report["package_version"] = "0.0.0"
+        path.write_text(json.dumps(report))
+        pod = checker.read_json(self.root / "deploy/pod-template.json")
+        with self.assertRaisesRegex(checker.ReleaseError, "package version"):
+            checker.check_gpu_report(self.root, pod)
+
     def test_publish_refuses_placeholder_registry(self):
         path = self.root / 'deploy/pod-template.json'
         pod = json.loads(path.read_text())
