@@ -1,0 +1,107 @@
+name: Check image model layout
+
+on:
+  push:
+    paths:
+      - .github/workflows/layout.yml
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  layout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      IMAGE_REFERENCE: ghcr.io/akhilsivanand/moss-comfyui@sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671
+    steps:
+      - name: Pull the exact public image anonymously
+        shell: bash
+        run: |
+          set -euo pipefail
+          layout_docker_config="$RUNNER_TEMP/moss-layout-public-docker"
+          mkdir -p "$layout_docker_config"
+          docker --config "$layout_docker_config" pull --platform linux/amd64 "$IMAGE_REFERENCE"
+
+      - name: Verify baked model migration on the image overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No checkout, credentials, GPU, mounts, service startup or downloads.
+          docker run --rm --interactive --pull never --platform linux/amd64 \
+            --network none --no-healthcheck \
+            --entrypoint /opt/venv/bin/python "$IMAGE_REFERENCE" - <<'PY'
+          import hashlib
+          import json
+          from pathlib import Path
+          import stat
+
+          from moss_runtime.paths import PLACEHOLDER, expose_persistent_models
+
+          comfy = Path('/opt/comfyui')
+          workspace = Path('/workspace/ComfyUI')
+          baked = comfy / 'models'
+          canonical = workspace / 'models'
+          root_mount = next(
+              line for line in Path('/proc/self/mountinfo').read_text().splitlines()
+              if line.split()[4] == '/'
+          )
+          filesystem = root_mount.split(' - ', 1)[1].split()[0]
+          assert filesystem == 'overlay', f'Expected image overlay, found {filesystem}'
+          assert not Path('/workspace').is_mount(), 'Test must not attach a workspace volume'
+          assert not workspace.exists(), 'Expected an untouched image workspace'
+          assert baked.is_dir() and not baked.is_symlink(), 'Expected baked lower-layer models'
+
+          def files(root):
+              result = {}
+              for path in sorted(root.rglob('*')):
+                  metadata = path.lstat()
+                  assert not stat.S_ISLNK(metadata.st_mode), f'Unexpected link: {path}'
+                  if not stat.S_ISREG(metadata.st_mode):
+                      continue
+                  if metadata.st_size == 0 and PLACEHOLDER.fullmatch(path.name):
+                      continue
+                  result[path.relative_to(root).as_posix()] = {
+                      'sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                      'size': metadata.st_size,
+                  }
+              return result
+
+          original = files(baked)
+          assert original and any(item['size'] for item in original.values()), (
+              'Expected real baked configuration files to exercise lower-layer migration'
+          )
+          expose_persistent_models(comfy, workspace)
+          assert workspace.is_dir() and not workspace.is_symlink()
+          assert canonical.is_dir() and not canonical.is_symlink()
+          assert baked.is_symlink() and baked.resolve(strict=True) == canonical.resolve(strict=True)
+          assert files(canonical) == original, 'Baked nonplaceholder file hashes changed'
+          for relative in original:
+              assert (baked / relative).samefile(canonical / relative)
+
+          fixture = canonical / 'loras' / 'moss_layout_cpu_fixture.safetensors'
+          fixture.parent.mkdir(exist_ok=True)
+          opaque_bytes = b'moss-layout-cpu-path-fixture\x00\x01\x02\n'
+          with fixture.open('xb') as target:
+              target.write(opaque_bytes)
+          alias_fixture = baked / 'loras' / fixture.name
+          assert fixture.read_bytes() == alias_fixture.read_bytes() == opaque_bytes
+          assert fixture.samefile(alias_fixture)
+
+          before_repeat = files(canonical)
+          model_identity = canonical.stat().st_dev, canonical.stat().st_ino
+          alias_identity = baked.lstat().st_ino, baked.readlink()
+          expose_persistent_models(comfy, workspace)
+          assert files(canonical) == before_repeat, 'Idempotent call changed model files'
+          assert (canonical.stat().st_dev, canonical.stat().st_ino) == model_identity
+          assert (baked.lstat().st_ino, baked.readlink()) == alias_identity
+          assert baked.resolve(strict=True) == canonical.resolve(strict=True)
+          assert fixture.samefile(alias_fixture) and alias_fixture.read_bytes() == opaque_bytes
+          print(json.dumps({
+              'status': 'passed', 'root_filesystem': filesystem,
+              'original_baked_files_preserved': len(original),
+              'canonical_models_real': True, 'installed_models_alias_matches': True,
+              'opaque_lora_fixture_visible_through_both_paths': True,
+              'helper_idempotence': True, 'persistent_mounts': 0,
+          }))
+          PY
