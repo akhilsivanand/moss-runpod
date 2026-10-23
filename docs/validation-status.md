@@ -1,4 +1,4 @@
-# Validation status — 2026-10-21
+# Validation status — 2026-10-23
 
 **0.1.2 corrects the workspace and model paths.** Pod data now uses `/workspace/ComfyUI`, with LoRAs under **`/workspace/ComfyUI/models/loras`**. The installed application's `/opt/comfyui/models` points to that same model tree.
 
@@ -8,7 +8,7 @@ Runtime source is `a14d011be32b86447a06c88531f0c334b9b86f08`; the exact image is
 ghcr.io/akhilsivanand/moss-comfyui@sha256:21cde4857330e4bd5f8660dc95a89a85c358c79fbac77e2c08f0e80004729671
 ```
 
-Fresh Pod generation, native browser, prompt enhancement and restart checks passed on the corrected image. The stable 0.1.2 image, corrected public Pod template and [GitHub release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.2) are published and verified. Hub source download still fails with HTTP 401 after user-reported GitHub reauthorization; Hub produced no image and did not start tests, and the listing is not approved or listed. The historical [0.1.0](validation-0.1.0.json) and [0.1.1](validation-0.1.1.json) reports remain separate evidence for their earlier runtimes.
+Fresh Pod generation, native browser, prompt enhancement and restart checks passed on the corrected image. The stable 0.1.2 image, corrected public Pod template and [GitHub release](https://github.com/akhilsivanand/moss-runpod/releases/tag/v0.1.2) are published and verified. Hub source download still fails with HTTP 401 after the latest retest on 2026-10-23, which followed user-reported support advice to test again; Hub produced no image and did not start tests, and the listing is not approved or listed. The historical [0.1.0](validation-0.1.0.json) and [0.1.1](validation-0.1.1.json) reports remain separate evidence for their earlier runtimes.
 
 | Check | 0.1.2 result |
 |---|---|
@@ -32,7 +32,7 @@ Fresh Pod generation, native browser, prompt enhancement and restart checks pass
 | Disposable API cleanup | Endpoint/source template deleted and 404 verified; existing published API resources unchanged |
 | Stable 0.1.2 tag and public Pod template | Tested manifest promoted without rebuilding; anonymous digest identity and template image/start command/native Connect/storage/README readback verified |
 | GitHub v0.1.2 release | Public release/tag target and all three downloaded assets verified anonymously; archive extraction/publication check passed |
-| Runpod Hub | Initial submission and three normal retries failed during source download with HTTP 401 before Dockerfile execution. The latest retry followed user-reported corrected GitHub authorization; no image, tests, listing or approval. Runpod assistance needed; cause unproven |
+| Runpod Hub | Initial submission and four normal retries failed during source download with HTTP 401 before Dockerfile execution. The latest retry followed user-reported support advice to test again; no image, tests, listing or approval. Runpod assistance still needed; cause unproven |
 
 ## Layout preservation scope
 
@@ -68,6 +68,6 @@ The current [validation report](validation.json) must include only completed 0.1
 
 The [publication record](publication-0.1.2.json) records post-upload checks. The release ZIP and attached runtime report remain immutable; later Hub status is recorded here on repository main.
 
-The Hub failure is separate from the successful direct Pod and queue API runtime checks. Normal maintainer metadata reports HTTP 401 while downloading the exact GitHub source archive, before Dockerfile execution. An earlier anonymous read of that archive returned HTTP 200. The initial attempt took 13.339 seconds; three normal retries repeated the failure after 25.495, 65.309 and 85.290 seconds. The latest attempt ran from 18:46:06.872 to 18:47:32.162 UTC on 2026-10-20, after the user reported completing the corrected GitHub authorization.
+The Hub failure is separate from the successful direct Pod and queue API runtime checks. Normal maintainer metadata reports HTTP 401 while downloading the exact GitHub source archive, before Dockerfile execution. An anonymous GET of that archive returned HTTP 200 again on 2026-10-23. The initial attempt took 13.339 seconds; four normal retries repeated the failure after 25.495, 65.309, 85.290 and 40.895 seconds. The third retry followed user-reported corrected GitHub authorization. The latest attempt ran from 13:07:05.855 to 13:07:46.750 UTC on 2026-10-23, after the user reported support advice to test again. Its source commit still matched the v0.1.2 packaging revision; no image was produced and tests did not start.
 
-Authorization completion was user-reported; the OAuth callback was not independently observed. The repeated HTTP 401 does not establish the underlying cause. Runpod assistance is needed to investigate the source-download failure. The tested image, ComfyUI Pod release and immutable release assets remain available and unchanged.
+Authorization completion was user-reported; the OAuth callback was not independently observed. The latest support advice was also user-reported, and the reply was not independently read. The repeated HTTP 401 does not establish the underlying cause. Runpod assistance is still needed to investigate the source-download failure after this retest. The tested image, ComfyUI Pod release and immutable release assets remain available and unchanged.

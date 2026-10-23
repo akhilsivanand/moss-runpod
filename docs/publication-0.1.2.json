@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "version": "0.1.2",
-  "recorded_at": "2026-10-20T18:47:51.643950+00:00",
+  "recorded_at": "2026-10-23T13:10:26.203772+00:00",
   "runtime_source_revision": "a14d011be32b86447a06c88531f0c334b9b86f08",
   "packaging_revision": "d1ea3b1469420d0ed374a5268673d85ef7ae222c",
   "image": {
@@ -48,26 +48,29 @@
     "submission_count": 1,
     "indexed_source_matches_packaging_revision": true,
     "build_state": "FAILED",
-    "build_duration_seconds": 85.29,
+    "build_duration_seconds": 40.895,
     "image_produced": false,
     "tests_started": false,
     "listed": false,
     "reject_note_present": false,
     "approval_confirmed": false,
     "diagnostic_scope": "Normal maintainer build.error and listing metadata only; no Pod logs, build logs or history read.",
-    "normal_maintainer_retry_count": 3,
-    "latest_build_duration_seconds": 85.29,
+    "normal_maintainer_retry_count": 4,
+    "total_attempt_count": 5,
+    "latest_build_duration_seconds": 40.895,
     "failure_stage": "GitHub repository archive download",
     "source_download_http_status": 401,
     "exact_source_archive_anonymously_readable_http_status": 200,
     "reconnection": "User reported completing corrected GitHub authorization; OAuth callback completion was not independently observed.",
     "initial_build_duration_seconds": 13.339,
-    "latest_build_started_at": "2026-10-20T18:46:06.872Z",
-    "latest_build_completed_at": "2026-10-20T18:47:32.162Z",
+    "latest_build_started_at": "2026-10-23T13:07:05.855Z",
+    "latest_build_completed_at": "2026-10-23T13:07:46.750Z",
     "authorization_completion_evidence": "user_report",
     "authorization_callback_observed": false,
+    "support_retest_advice_evidence": "user_report",
+    "support_reply_independently_read": false,
     "failure_cause_established": false,
-    "next_step": "Runpod assistance is needed to investigate the repeated source-download HTTP 401.",
+    "next_step": "Runpod assistance is still needed to investigate the source-download HTTP 401 after the support-advised retest reported by the user.",
     "attempt_history": [
       {
         "attempt": 0,
@@ -107,12 +110,26 @@
         "after_user_reported_corrected_authorization": true,
         "started_at": "2026-10-20T18:46:06.872Z",
         "completed_at": "2026-10-20T18:47:32.162Z"
+      },
+      {
+        "attempt": 4,
+        "kind": "normal_maintainer_retry",
+        "duration_seconds": 40.895,
+        "build_state": "FAILED",
+        "source_download_http_status": 401,
+        "image_produced": false,
+        "tests_started": false,
+        "after_user_reported_support_retest_advice": true,
+        "started_at": "2026-10-23T13:07:05.855Z",
+        "completed_at": "2026-10-23T13:07:46.750Z"
       }
-    ]
+    ],
+    "exact_source_archive_anonymously_readable_checked_at": "2026-10-23T13:10:26.203772+00:00"
   },
   "notes": [
     "This post-upload publication record supplements the immutable runtime validation report attached to the release.",
     "The release ZIP and validation asset remain unchanged; later publication and review status is recorded on repository main.",
-    "The user reported completing corrected GitHub authorization before the latest retry. The callback was not independently observed, and the persisted source-download HTTP 401 does not establish the underlying cause."
+    "The user reported completing corrected GitHub authorization before the third retry. The callback was not independently observed, and the persisted source-download HTTP 401 does not establish the underlying cause.",
+    "The fourth retry followed user-reported support advice to test again. The support reply was not independently read; this retry still failed during source download, before image creation or automated tests."
   ]
 }
